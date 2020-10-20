@@ -2,6 +2,7 @@
 
 
 // https://www.geeks3d.com/20141201/how-to-rotate-a-vertex-by-a-quaternion-in-glsl/
+// https://code.google.com/archive/p/kri/wikis/Quaternions.wiki
 
 
 #if OPENGL
