@@ -1,0 +1,4 @@
+Source File,Dest File,Processor Type,Content Type,Source File Size,Dest File Size,Build Seconds
+"C:/Users/will/MainFiles/MyProjects2020/CubeMapHdrConversionDx/Content/hdr_colorful_studio_2k.hdr","C:/Users/will/MainFiles/MyProjects2020/CubeMapHdrConversionDx/Content/bin/Windows/hdr_colorful_studio_2k.xnb","TextureProcessor","Texture2DContent",6616038,8388693,0.43716
+"C:/Users/will/MainFiles/MyProjects2020/CubeMapHdrConversionDx/Content/TextureCubeBuildEffect.fx","C:/Users/will/MainFiles/MyProjects2020/CubeMapHdrConversionDx/Content/bin/Windows/TextureCubeBuildEffect.xnb","EffectProcessor","CompiledEffectContent",9239,5182,0.5076481
+"C:/Users/will/MainFiles/MyProjects2020/CubeMapHdrConversionDx/Content/TextureCubeDrawEffect.fx","C:/Users/will/MainFiles/MyProjects2020/CubeMapHdrConversionDx/Content/bin/Windows/TextureCubeDrawEffect.xnb","EffectProcessor","CompiledEffectContent",2497,2622,0.428534
