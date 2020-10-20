@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\will\\MainFiles\\MyProjects2020\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj": {}
+    "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj": {}
   },
   "projects": {
-    "C:\\Users\\will\\MainFiles\\MyProjects2020\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj": {
+    "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\will\\MainFiles\\MyProjects2020\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj",
+        "projectUniqueName": "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj",
         "projectName": "CubeMapHdrConversionDx",
-        "projectPath": "C:\\Users\\will\\MainFiles\\MyProjects2020\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj",
+        "projectPath": "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj",
         "packagesPath": "C:\\Users\\will\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\will\\MainFiles\\MyProjects2020\\CubeMapHdrConversionDx\\obj\\",
+        "outputPath": "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

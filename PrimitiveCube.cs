@@ -85,25 +85,6 @@ namespace Microsoft.Xna.Framework
             return Vector3.Transform(v, GetWorldFaceMatrix(faceIndex));
         }
 
-        public void DrawPrimitiveCubeFace(GraphicsDevice gd, Effect effect, TextureCube cubeTexture, int cubeFaceToRender)
-        {
-            effect.Parameters["CubeMap"].SetValue(cubeTexture);
-            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaces, cubeFaceToRender * 6, 2, VertexPositionNormalTexture.VertexDeclaration);
-            }
-        }
-        public void DrawPrimitiveCube(GraphicsDevice gd, Effect effect, TextureCube cubeTexture)
-        {
-            effect.Parameters["CubeMap"].SetValue(cubeTexture);
-            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaces, 0, 12, VertexPositionNormalTexture.VertexDeclaration);
-            }
-        }
-
         public static Matrix GetWorldFaceMatrix(int i)
         {
             switch (i)
@@ -122,6 +103,25 @@ namespace Microsoft.Xna.Framework
                     return matrixNegativeY;
                 default:
                     return matrixNegativeZ;
+            }
+        }
+
+        public void DrawPrimitiveCubeFace(GraphicsDevice gd, Effect effect, TextureCube cubeTexture, int cubeFaceToRender)
+        {
+            effect.Parameters["CubeMap"].SetValue(cubeTexture);
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaces, cubeFaceToRender * 6, 2, VertexPositionNormalTexture.VertexDeclaration);
+            }
+        }
+        public void DrawPrimitiveCube(GraphicsDevice gd, Effect effect, TextureCube cubeTexture)
+        {
+            effect.Parameters["CubeMap"].SetValue(cubeTexture);
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaces, 0, 12, VertexPositionNormalTexture.VertexDeclaration);
             }
         }
     }

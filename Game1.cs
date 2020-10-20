@@ -20,7 +20,8 @@ namespace CubeMapHdrConversionDx
         private Effect _cubeDrawEffect;
 
         private Texture2D _textureHdrEnvMap;
-        private Texture2D _generatedTexture;
+        private Texture2D _generatedHdrLdrSphericalTexture;
+        private Texture2D[] _textureFaceArray;
         private TextureCube _textureCubeEnviroment;
         private TextureCube _textureCubeIblDiffuseIllumination;
         private TextureCube _textureCubeIblSpecularIllumination;
@@ -93,8 +94,11 @@ namespace CubeMapHdrConversionDx
         public void CreateIblCubeMaps()
         {
             Console.WriteLine($"\n Rendered to scene.");
-            HdrTextureCubeLoader.RenderToSceneFaces(GraphicsDevice, _textureCubeBuildEffect, "HdrToEnvCubeMap", _textureHdrEnvMap, ref _textureCubeEnviroment, true, true, 512);
-            HdrTextureCubeLoader.RenderToSceneFaces(GraphicsDevice, _textureCubeBuildEffect, "EnvCubemapToDiffuseIlluminationCubeMap", _textureCubeEnviroment, ref _textureCubeIblDiffuseIllumination, false, true, 128);
+            HdrLdrTextureCubeConverter.RenderSpherical2DToTextureCube(GraphicsDevice, _textureCubeBuildEffect, "HdrToEnvCubeMap", _textureHdrEnvMap, ref _textureCubeEnviroment, true, true, 512);
+            HdrLdrTextureCubeConverter.RenderTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, "EnvCubemapToDiffuseIlluminationCubeMap", _textureCubeEnviroment, ref _textureCubeIblDiffuseIllumination, false, true, 128);
+            HdrLdrTextureCubeConverter.RenderTextureCubeToSpherical(GraphicsDevice, _textureCubeBuildEffect, "EnvCubemapToDiffuseIlluminationCubeMap", _textureCubeIblDiffuseIllumination, ref _generatedHdrLdrSphericalTexture, false, true, 512);
+            HdrLdrTextureCubeConverter.RenderTextureCubeToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, "HdrToEnvCubeMap", _textureCubeEnviroment, ref _textureFaceArray, false, true, 128);
+            //HdrLdrTextureCubeConverter.RenderTexture2DArrayToTextureCube(GraphicsDevice, _textureCubeBuildEffect, "EnvCubemapToDiffuseIlluminationCubeMap", _textureFaceArray, ref _textureCubeEnviroment, false, true, 128);
         }
 
         public void SetupCamera()
@@ -104,9 +108,9 @@ namespace CubeMapHdrConversionDx
             _camera = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(2, 2, 10), new Vector3(0, 0, 0), Vector3.UnitY, 0.1f, 10000f, 1f, true, false);
             _camera.TransformCamera(_camera.World.Translation, _targetLookAt, _camera.World.Up);
             _camera.Up = Vector3.Up;
-            _camera.WayPointCycleDurationInTotalSeconds = 50f;
+            _camera.WayPointCycleDurationInTotalSeconds = 25f;
             _camera.MovementSpeedPerSecond = 3f;
-            _camera.SetWayPoints(_cameraWayPoints, true, 50);
+            _camera.SetWayPoints(_cameraWayPoints, true, 30);
         }
 
         protected override void Update(GameTime gameTime)
@@ -214,11 +218,28 @@ namespace CubeMapHdrConversionDx
 
             _spriteBatch.Draw(_textureHdrEnvMap, new Rectangle(0, 0, 200, 100), Color.White);
 
+            DrawGeneratedTextures();
+
             _camera.DrawCurveThruWayPointsWithSpriteBatch(2f, new Vector3(300, 100, 100), 1, gameTime);
 
             _spriteBatch.DrawString(_font, msg, new Vector2(10, 100), Color.Moccasin);
 
             _spriteBatch.End();
+        }
+
+        public void DrawGeneratedTextures()
+        {
+            if (_generatedHdrLdrSphericalTexture != null)
+            {
+                _spriteBatch.Draw(_generatedHdrLdrSphericalTexture, new Rectangle(210, 0, 200, 100), Color.White);
+            }
+            if (_textureFaceArray != null)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    _spriteBatch.Draw(_textureFaceArray[i], new Rectangle(105 * i + 420, 0, 100, 100), Color.White);
+                }
+            }
         }
 
 

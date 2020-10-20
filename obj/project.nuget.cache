@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "jGnz87dYNYzHHHAli7+tcKQzAUkjV69ViFAExxb0eRKqa787qedn4M2iRLnQIpyTfNktpPiQxEEOy+n7vchYew==",
+  "dgSpecHash": "/fb/LMFbcMDzJAOGAoAzZaePPg7AuHZBmdn0jzbIOEW0trAT1fi7wfRxyAUHijD0ffmzNlInJw6ywQW6XkBJkw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\will\\MainFiles\\MyProjects2020\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj",
+  "projectFilePath": "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\will\\.nuget\\packages\\libuv\\1.9.1\\libuv.1.9.1.nupkg.sha512",
     "C:\\Users\\will\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\1.1.0\\microsoft.codeanalysis.analyzers.1.1.0.nupkg.sha512",

@@ -137,13 +137,19 @@ float2 CubeMapNormalTo2dEquaRectangularMapUvCoordinatesAlt(float3 a_coords)
     return float2(sphereCoords.x * 0.5f + 0.5f, 1.0f - sphereCoords.y);
 }
 
-float4 CubeToFaceCopy(float3 pixelpos, int face)
+float3 EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(float2 uvCoords)
 {
-    FaceStruct input = UvFaceToCubeMapVector(pixelpos, face);
-    float3 n = input.PositionNormal;
-    return  float4(texCUBElod(CubeMapSampler, float4(n, 0.0f)).rgb, 1.0f);
+    float pi = 3.14159265358f;
+    float3 v = float3(0.0f, 0.0f, 0.0f);
+    float2 uv = uvCoords;
+    uv *= float2(2.0f * pi, pi);
+    float siny = sin(uv.y);
+    v.x = -sin(uv.x) * siny;
+    v.y = cos(uv.y);
+    v.z = -cos(uv.x) * siny;
+    //v = new Vector3(v.Z, -v.Y, v.X);
+    return v;
 }
-
 
 // http://www.codinglabs.net/article_physically_based_rendering.aspx
 //
@@ -260,6 +266,51 @@ technique HdrToEnvCubeMap
 };
 
 
+//____________________________________
+// shaders and technique CubeMapToEnvHdr
+// Copy enviromental cubemap to 2d spherical
+//____________________________________
+
+float4 CubeMapToTexturePS(HdrToCubeMapVertexShaderOutput input) : COLOR
+{
+    float3 v = EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(input.Position3D.xy);
+    return texCUBElod(CubeMapSampler, float4(v, 0.0f) );
+}
+
+technique CubeMapToEnvHdr
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL
+            HdrToEnvCubeMapVS();
+        PixelShader = compile PS_SHADERMODEL
+            CubeMapToTexturePS();
+    }
+};
+
+//____________________________________
+// shaders and technique FaceToFace
+// Copy enviromental cubemap to 2d spherical
+//____________________________________
+
+
+float4 FaceToFacePS(HdrToCubeMapVertexShaderOutput input) : COLOR
+{
+    //float2 texcoords = float2(uv.x, 1.0f - uv.y);  // raw dx transform
+    float4 color = float4(tex2D(TextureSamplerDiffuse, input.Position3D.xy).rgb, 1.0f);
+    return color;
+}
+
+technique CubeMapToEnvHdr
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL
+            HdrToEnvCubeMapVS();
+        PixelShader = compile PS_SHADERMODEL
+            FaceToFacePS();
+    }
+};
 
 //____________________________________
 // shaders and technique EnvCubemapToDiffuseIlluminationCubeMap
@@ -289,3 +340,53 @@ technique EnvCubemapToDiffuseIlluminationCubeMap
             HdrToDiffuseIlluminationCubeMapPS();
     }
 };
+
+
+
+
+
+
+
+
+
+
+//float2 CubeMapVectorToUvFace(float3 v, out int faceIndex)
+//{
+//    float3 vAbs = Abs(v);
+//    float ma;
+//    float2 uv;
+//    if (vAbs.z >= vAbs.x && vAbs.z >= vAbs.y)
+//    {
+//        faceIndex = v.z < 0.0 ? FACE_FRONT : FACE_BACK;   // z major axis.  we designate negative z forward.
+//        ma = 0.5f / vAbs.z;
+//        uv = float2(v.z < 0.0f ? -v.x : v.x, -v.y);
+//    }
+//    else if (vAbs.y >= vAbs.x)
+//    {
+//        faceIndex = v.y < 0.0f ? FACE_BOTTOM : FACE_TOP;  // y major axis.
+//        ma = 0.5f / vAbs.y;
+//        uv = float2(v.x, v.y < 0.0 ? -v.z : v.z);
+//    }
+//    else
+//    {
+//        faceIndex = v.X < 0.0 ? FACE_LEFT : FACE_RIGHT; // x major axis.
+//        ma = 0.5f / vAbs.X;
+//        uv = float2(v.X < 0.0 ? v.Z : -v.Z, -v.Y);
+//    }
+//    return uv * ma + float2(0.5f, 0.5f);
+//}
+
+
+
+//// render cube maps face
+//float4 CubeToFaceCopy(float3 pixelpos, int face)
+//{
+//    FaceStruct input = UvFaceToCubeMapVector(pixelpos, face);
+//    return  float4(texCUBElod(CubeMapSampler, float4(input.PositionNormal, 0.0f)).rgb, 1.0f);
+//}
+
+//// render texture2d regular.
+//float4 Face2DToFaceCopy(float3 pixelpos, int face)
+//{
+//    return  float4(tex2D(TextureSamplerDiffuse, pixelpos.xy).rgb, 1.0f);
+//}
