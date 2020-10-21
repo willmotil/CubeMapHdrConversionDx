@@ -73,7 +73,7 @@ namespace Microsoft.Xna.Framework
             {
                 var renderTarget2D = new RenderTarget2D(gd, sizeSquarePerFace, sizeSquarePerFace /2, generateMips, pixelformat, DepthFormat.None);
                 gd.SetRenderTarget(renderTarget2D);
-                _hdrEffect.Parameters["FaceToMap"].SetValue(i); // render screenquad to face.
+                ///_hdrEffect.Parameters["FaceToMap"].SetValue(i); // render screenquad to face.
                 foreach (EffectPass pass in _hdrEffect.CurrentTechnique.Passes)
                 {
                     pass.Apply();
@@ -202,6 +202,32 @@ namespace Microsoft.Xna.Framework
             textureCubeDestinationMap = renderTargetCube; // set the render to the specified texture cube.
             gd.SetRenderTarget(null);
         }
+
+        ///// <summary>
+        ///// Renders the hdr TextureCube to a array of 6 texture2D faces using the designated effect and technique.
+        ///// </summary>
+        //public static void RenderTextureCubeToSpherical(GraphicsDevice gd, Effect _hdrEffect, string Technique, TextureCube sourceHdrLdrEnvMap, ref Texture2D textureSpherical, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        //{
+        //    gd.RasterizerState = RasterizerState.CullNone;
+        //    var pixelformat = SurfaceFormat.Color;
+        //    if (useHdrFormat)
+        //        pixelformat = SurfaceFormat.Vector4;
+        //    _hdrEffect.CurrentTechnique = _hdrEffect.Techniques[Technique];
+        //    _hdrEffect.Parameters["CubeMap"].SetValue(sourceHdrLdrEnvMap);
+        //    for (int i = 0; i < 6; i++)
+        //    {
+        //        var renderTarget2D = new RenderTarget2D(gd, sizeSquarePerFace, sizeSquarePerFace / 2, generateMips, pixelformat, DepthFormat.None);
+        //        gd.SetRenderTarget(renderTarget2D);
+        //        ///_hdrEffect.Parameters["FaceToMap"].SetValue(i); // render screenquad to face.
+        //        foreach (EffectPass pass in _hdrEffect.CurrentTechnique.Passes)
+        //        {
+        //            pass.Apply();
+        //            gd.DrawUserPrimitives(PrimitiveType.TriangleList, screenQuad.vertices, 0, 2);
+        //        }
+        //        textureSpherical = renderTarget2D; // set the render to the specified texture.
+        //    }
+        //    gd.SetRenderTarget(null);
+        //}
 
         public class PrimitiveScreenQuad
         {

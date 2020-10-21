@@ -186,6 +186,13 @@ namespace Microsoft.Xna.Framework
                 TransformCamera(Vector3.Lerp(waypoints[index], waypoints[index2], adjustedInterpolator), targetPosition, _camUp);
         }
 
+        /// <summary>
+        /// Tells the camera to execute a visualization of the waypoint camera path.
+        /// </summary>
+        /// <param name="scale">Scale of visualization</param>
+        /// <param name="offset">positional offset on screen</param>
+        /// <param name="PlaneOption">change of the signifigant input offsets to , xyz  0 = xy0, 1 =x0y, 2 = 0yz</param>
+        /// <param name="gameTime"></param>
         public void DrawCurveThruWayPointsWithSpriteBatch(float scale, Vector3 offset, int PlaneOption, GameTime gameTime)
         {
             if (wayPointCurvature != null)
@@ -264,13 +271,13 @@ namespace Microsoft.Xna.Framework
             }
             return new Vector3(v.X, v.Y, v.Z);
         }
-        private Vector2 Get2dVectorAxisElements(Vector3 v, int OptionXY_XZ_YZ)
+        private Vector2 Get2dVectorAxisElements(Vector3 v, int OptionXY_XZ_YZ_012)
         {
-            if (OptionXY_XZ_YZ == 1)
+            if (OptionXY_XZ_YZ_012 == 1)
             {
                 return new Vector2(v.X, v.Z);
             }
-            if (OptionXY_XZ_YZ == 2)
+            if (OptionXY_XZ_YZ_012 == 2)
             {
                 return new Vector2(v.Y, v.Z);
             }

@@ -148,9 +148,25 @@ float3 EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(float2 uvCoords)
     v.x = -sin(uv.x) * siny;
     v.y = cos(uv.y);
     v.z = -cos(uv.x) * siny;
-    //v = new Vector3(v.Z, -v.Y, v.X);
+    // adjustment rotational.
+    float hpi = PI / 2.0f;
+    v = float3(cos(hpi) * v.x + sin(hpi) * v.z, -v.y, -sin(hpi) * v.x + cos(hpi) * v.z);
     return v;
 }
+
+//float3 EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(float2 uvCoords)
+//{
+//    float pi = 3.14159265358f;
+//    float3 v = float3(0.0f, 0.0f, 0.0f);
+//    float2 uv = uvCoords;
+//    uv *= float2(2.0f * pi, pi);
+//    float siny = sin(uv.y);
+//    v.x = -sin(uv.x) * siny;
+//    v.y = cos(uv.y);
+//    v.z = -cos(uv.x) * siny;
+//    //v = new Vector3(v.Z, -v.Y, v.X);
+//    return v;
+//}
 
 // http://www.codinglabs.net/article_physically_based_rendering.aspx
 //
@@ -166,8 +182,8 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
     up = cross(input.FaceNormal, right);
 
     // the following values are in degrees
-    float numberOfSamplesHemisphere = 15; // we want the smallest amount with good quality
-    float numberOfSamplesAround = 30; // same as above
+    float numberOfSamplesHemisphere = 12; // we want the smallest amount with good quality
+    float numberOfSamplesAround = 12; // same as above
     float hemisphereMaxAngle = 45.0f; // we really want 90
 
     float minimumAdjustment = 2.1f; // this is to help control the sampling geometry.
@@ -233,7 +249,7 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
 
 
 //____________________________________
-// shaders and technique HdrToEnvCubeMap
+// shaders and technique SphericalToCubeMap
 // Copy 2d spherical hdr to enviromental cubemap
 //____________________________________
 
@@ -245,7 +261,7 @@ HdrToCubeMapVertexShaderOutput HdrToEnvCubeMapVS(in HdrToCubeMapVertexShaderInpu
     return output;
 }
 
-float4 HdrToEnvCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
+float4 SphericalToCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
 {
     FaceStruct face = UvFaceToCubeMapVector(input.Position3D, FaceToMap);
     float3 v = face.PositionNormal;
@@ -255,30 +271,58 @@ float4 HdrToEnvCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
     return color;
 }
 
-technique HdrToEnvCubeMap
+technique SphericalToCubeMap
 {
     pass P0
     {
         VertexShader = compile VS_SHADERMODEL
             HdrToEnvCubeMapVS();
         PixelShader = compile PS_SHADERMODEL
-            HdrToEnvCubeMapPS();
+            SphericalToCubeMapPS();
     }
 };
 
 
 //____________________________________
-// shaders and technique CubeMapToEnvHdr
+// shaders and technique CubeMapToSpherical
 // Copy enviromental cubemap to 2d spherical
+//____________________________________
+
+float4 CubeMapToSphericalPS(HdrToCubeMapVertexShaderOutput input) : COLOR
+{
+    float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
+    float3 n = EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(uv);
+    return texCUBElod(CubeMapSampler, float4(n, 0.0f) );
+}
+
+technique CubeMapToSpherical
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL
+            HdrToEnvCubeMapVS();
+        PixelShader = compile PS_SHADERMODEL
+            CubeMapToSphericalPS();
+    }
+};
+
+//____________________________________
+// shaders and technique CubeMapToTexture
+// Copy enviromental cubemap to 2d Texture
 //____________________________________
 
 float4 CubeMapToTexturePS(HdrToCubeMapVertexShaderOutput input) : COLOR
 {
-    float3 v = EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(input.Position3D.xy);
-    return texCUBElod(CubeMapSampler, float4(v, 0.0f) );
+    //float2 texcoords = float2(uv.x, 1.0f - uv.y);  // raw dx transform
+    FaceStruct face = UvFaceToCubeMapVector(input.Position3D, FaceToMap);
+    float3 n = face.PositionNormal;
+    //float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
+    return texCUBElod(CubeMapSampler, float4(n, 0.0f));
+    //float4 color = float4(tex2D(TextureSamplerDiffuse, input.Position3D.xy).rgb, 1.0f);
+    //return color;
 }
 
-technique CubeMapToEnvHdr
+technique CubeMapToTexture
 {
     pass P0
     {
@@ -290,31 +334,7 @@ technique CubeMapToEnvHdr
 };
 
 //____________________________________
-// shaders and technique FaceToFace
-// Copy enviromental cubemap to 2d spherical
-//____________________________________
-
-
-float4 FaceToFacePS(HdrToCubeMapVertexShaderOutput input) : COLOR
-{
-    //float2 texcoords = float2(uv.x, 1.0f - uv.y);  // raw dx transform
-    float4 color = float4(tex2D(TextureSamplerDiffuse, input.Position3D.xy).rgb, 1.0f);
-    return color;
-}
-
-technique CubeMapToEnvHdr
-{
-    pass P0
-    {
-        VertexShader = compile VS_SHADERMODEL
-            HdrToEnvCubeMapVS();
-        PixelShader = compile PS_SHADERMODEL
-            FaceToFacePS();
-    }
-};
-
-//____________________________________
-// shaders and technique EnvCubemapToDiffuseIlluminationCubeMap
+// shaders and technique CubemapToDiffuseIlluminationCubeMap
 // Generate diffuse illumination map from enviroment cubemap.
 //____________________________________
 
@@ -326,19 +346,19 @@ HdrToCubeMapVertexShaderOutput HdrToDiffuseIlluminationCubeMapVS(in HdrToCubeMap
     return output;
 }
 
-float4 HdrToDiffuseIlluminationCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
+float4 CubemapToDiffuseIlluminationCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
 {
     return GetIrradiance(input.Position3D, FaceToMap);
 }
 
-technique EnvCubemapToDiffuseIlluminationCubeMap
+technique CubemapToDiffuseIlluminationCubeMap
 {
     pass P0
     {
         VertexShader = compile VS_SHADERMODEL
             HdrToDiffuseIlluminationCubeMapVS();
         PixelShader = compile PS_SHADERMODEL
-            HdrToDiffuseIlluminationCubeMapPS();
+            CubemapToDiffuseIlluminationCubeMapPS();
     }
 };
 
