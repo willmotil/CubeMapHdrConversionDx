@@ -11,6 +11,6 @@ The project can easily be modified to save the images.
 There is also a incomplete but fairly decent waypoint camera as well made for the demo scene.
 
 NOTE when loading a Hdr image thru the mono game pipeline editor the texture format option for it should be set to none.
-<img src="https://github.com/willmotil/CubeMapHdrConversionDx/blob/main/zScr01.png"> 
+<img src="https://raw.githubusercontent.com/willmotil/CubeMapHdrConversionDx/main/zScr02.png"> 
  
 
