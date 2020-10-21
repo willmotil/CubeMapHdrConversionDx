@@ -120,22 +120,38 @@ FaceStruct UvFaceToCubeMapVector(float2 pos, int faceIndex)
     return output;
 }
 
+float2 CubeMapVectorToUvFace(float3 v, out int faceIndex)
+{
+    float3 vAbs = abs(v);
+    float ma;
+    float2 uv;
+    if (vAbs.z >= vAbs.x && vAbs.z >= vAbs.y)
+    {
+        faceIndex = v.z < 0.0 ? 5 : 4; // Right , left _  //FACE_FRONT : FACE_BACK;   // z major axis.  we designate negative z forward.
+        ma = 0.5f / vAbs.z;
+        uv = float2(v.z < 0.0f ? -v.x : v.x, -v.y);
+    }
+    else if (vAbs.y >= vAbs.x)
+    {
+        faceIndex = v.y < 0.0f ? 3 : 2; // bot , top  //FACE_BOTTOM : FACE_TOP;  // y major axis.
+        ma = 0.5f / vAbs.y;
+        uv = float2(v.x, v.y < 0.0 ? -v.z : v.z);
+    }
+    else
+    {
+        faceIndex = v.x < 0.0 ? 1 : 0; // back , front  //FACE_LEFT : FACE_RIGHT; // x major axis.
+        ma = 0.5f / vAbs.x;
+        uv = float2(v.x < 0.0 ? v.z : -v.z, -v.y);
+    }
+    return uv * ma + float2(0.5f, 0.5f);
+}
+
 float2 CubeMapNormalTo2dEquaRectangularMapUvCoordinates(float3 normal)
 {
     float2 uv = float2((float)atan2(-normal.z, normal.x), (float)asin(normal.y));
     float2 INVERT_ATAN = float2(0.1591f, 0.3183f);
     uv = uv * INVERT_ATAN + float2(0.5f, 0.5f);
     return uv;
-}
-
-float2 CubeMapNormalTo2dEquaRectangularMapUvCoordinatesAlt(float3 a_coords)
-{
-    float pi = 3.141592653589793f;
-    float3 a_coords_n = normalize(a_coords);
-    float lon = atan2(a_coords_n.z, a_coords_n.x);
-    float lat = acos(a_coords_n.y);
-    float2 sphereCoords = float2(lon, lat) * (1.0f / pi);
-    return float2(sphereCoords.x * 0.5f + 0.5f, 1.0f - sphereCoords.y);
 }
 
 float3 EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(float2 uvCoords)
@@ -313,13 +329,9 @@ technique CubeMapToSpherical
 
 float4 CubeMapToTexturePS(HdrToCubeMapVertexShaderOutput input) : COLOR
 {
-    //float2 texcoords = float2(uv.x, 1.0f - uv.y);  // raw dx transform
     FaceStruct face = UvFaceToCubeMapVector(input.Position3D, FaceToMap);
     float3 n = face.PositionNormal;
-    //float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
     return texCUBElod(CubeMapSampler, float4(n, 0.0f));
-    //float4 color = float4(tex2D(TextureSamplerDiffuse, input.Position3D.xy).rgb, 1.0f);
-    //return color;
 }
 
 technique CubeMapToTexture
@@ -332,6 +344,48 @@ technique CubeMapToTexture
             CubeMapToTexturePS();
     }
 };
+
+//____________________________________
+// shaders and technique TextureFacesToSpherical
+// Copy enviromental Faces to 2d spherical
+//____________________________________
+
+float4 TextureFacesToSphericalPS(HdrToCubeMapVertexShaderOutput input) : COLOR
+{
+    // We are looping the spherical texture we will need to do this 6 times and we must know the Face of which the position we are on represents..
+    float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
+    float3 n = EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(uv);
+    int sphericalFace;
+    float2 sample_uv = CubeMapVectorToUvFace(n, sphericalFace);
+    // When we call this function we will pass each face texture in sequence and the face it represents, we must compare if the faces match.
+    // Each face we send in might not even have any eligible pixels to be sampled and may need to be cliped if its face doesn't match the current render pixels face if it does the derived sample uv is valid other wise we clip.
+    float4 color = float4(0, 0, 0, 0);
+    if (FaceToMap == sphericalFace)
+    {
+        color = float4(tex2D(TextureSamplerDiffuse, sample_uv).rgb, 1.0f);
+    }
+    else
+        clip(-1);
+    return color;
+    //float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
+}
+
+technique TextureFacesToSpherical
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL
+            HdrToEnvCubeMapVS();
+        PixelShader = compile PS_SHADERMODEL
+            TextureFacesToSphericalPS();
+    }
+};
+
+//FaceStruct face = UvFaceToCubeMapVector(input.Position3D, FaceToMap);
+//float3 v = face.PositionNormal;
+//float2 uv = CubeMapNormalTo2dEquaRectangularMapUvCoordinates(v);
+//float2 texcoords = float2(uv.x, 1.0f - uv.y);  // raw dx transform
+//float4 color = float4(tex2D(TextureSamplerDiffuse, texcoords).rgb, 1.0f);
 
 //____________________________________
 // shaders and technique CubemapToDiffuseIlluminationCubeMap
@@ -371,33 +425,17 @@ technique CubemapToDiffuseIlluminationCubeMap
 
 
 
-//float2 CubeMapVectorToUvFace(float3 v, out int faceIndex)
+
+
+//float2 CubeMapNormalTo2dEquaRectangularMapUvCoordinatesAlt(float3 a_coords)
 //{
-//    float3 vAbs = Abs(v);
-//    float ma;
-//    float2 uv;
-//    if (vAbs.z >= vAbs.x && vAbs.z >= vAbs.y)
-//    {
-//        faceIndex = v.z < 0.0 ? FACE_FRONT : FACE_BACK;   // z major axis.  we designate negative z forward.
-//        ma = 0.5f / vAbs.z;
-//        uv = float2(v.z < 0.0f ? -v.x : v.x, -v.y);
-//    }
-//    else if (vAbs.y >= vAbs.x)
-//    {
-//        faceIndex = v.y < 0.0f ? FACE_BOTTOM : FACE_TOP;  // y major axis.
-//        ma = 0.5f / vAbs.y;
-//        uv = float2(v.x, v.y < 0.0 ? -v.z : v.z);
-//    }
-//    else
-//    {
-//        faceIndex = v.X < 0.0 ? FACE_LEFT : FACE_RIGHT; // x major axis.
-//        ma = 0.5f / vAbs.X;
-//        uv = float2(v.X < 0.0 ? v.Z : -v.Z, -v.Y);
-//    }
-//    return uv * ma + float2(0.5f, 0.5f);
+//    float pi = 3.141592653589793f;
+//    float3 a_coords_n = normalize(a_coords);
+//    float lon = atan2(a_coords_n.z, a_coords_n.x);
+//    float lat = acos(a_coords_n.y);
+//    float2 sphereCoords = float2(lon, lat) * (1.0f / pi);
+//    return float2(sphereCoords.x * 0.5f + 0.5f, 1.0f - sphereCoords.y);
 //}
-
-
 
 //// render cube maps face
 //float4 CubeToFaceCopy(float3 pixelpos, int face)
