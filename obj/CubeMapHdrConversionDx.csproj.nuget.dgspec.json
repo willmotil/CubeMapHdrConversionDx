@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Owner\\GithubPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj": {}
+    "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Owner\\GithubPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj": {
+    "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Owner\\GithubPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj",
+        "projectUniqueName": "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj",
         "projectName": "CubeMapHdrConversionDx",
-        "projectPath": "C:\\Users\\Owner\\GithubPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj",
-        "packagesPath": "C:\\Users\\Owner\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Owner\\GithubPrjs\\CubeMapHdrConversionDx\\obj\\",
+        "projectPath": "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\CubeMapHdrConversionDx.csproj",
+        "packagesPath": "C:\\Users\\will\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\will\\MainFiles\\GitPrjs\\CubeMapHdrConversionDx\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
         ],
         "configFilePaths": [
-          "C:\\Users\\Owner\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\will\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -68,7 +68,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.401\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.302\\RuntimeIdentifierGraph.json"
         }
       }
     }
