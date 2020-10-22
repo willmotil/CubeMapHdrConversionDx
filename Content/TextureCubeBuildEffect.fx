@@ -3,6 +3,7 @@
 
 // https://www.geeks3d.com/20141201/how-to-rotate-a-vertex-by-a-quaternion-in-glsl/
 // https://code.google.com/archive/p/kri/wikis/Quaternions.wiki
+// http://eigen.tuxfamily.org/dox/classEigen_1_1AngleAxis.html
 
 
 #if OPENGL
@@ -282,8 +283,9 @@ float4 SphericalToCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
     FaceStruct face = UvFaceToCubeMapVector(input.Position3D, FaceToMap);
     float3 v = face.PositionNormal;
     float2 uv = CubeMapNormalTo2dEquaRectangularMapUvCoordinates(v);
-    float2 texcoords = float2(uv.x, 1.0f - uv.y);  // raw dx transform
-    float4 color = float4(tex2D(TextureSamplerDiffuse, texcoords).rgb, 1.0f);
+    uv = float2(uv.x, 1.0f - uv.y);  // raw dx transform ok in hind site this shortcut hack in was a bad idea.
+    //float2 texcoords = float2(uv.x, uv.y);  // i will have to perform this fix later on.
+    float4 color = float4(tex2D(TextureSamplerDiffuse, uv).rgb, 1.0f);
     return color;
 }
 
@@ -381,11 +383,32 @@ technique TextureFacesToSpherical
     }
 };
 
-//FaceStruct face = UvFaceToCubeMapVector(input.Position3D, FaceToMap);
-//float3 v = face.PositionNormal;
-//float2 uv = CubeMapNormalTo2dEquaRectangularMapUvCoordinates(v);
-//float2 texcoords = float2(uv.x, 1.0f - uv.y);  // raw dx transform
-//float4 color = float4(tex2D(TextureSamplerDiffuse, texcoords).rgb, 1.0f);
+
+//____________________________________
+// shaders and technique TextureFacesToSpherical
+// Copy enviromental Faces to 2d spherical
+//____________________________________
+
+// render texture2d regular.
+float4 Face2DToFaceCopyPS(HdrToCubeMapVertexShaderOutput input) : COLOR
+{
+    float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
+    // forced hack due to the line in SphericalToCubeMapPS uv = float2(uv.x, 1.0f - uv.y);
+    // this should be removable on the condition i remove that and adjust everything to then be in proper alignment.
+    uv = float2(uv.x, 1.0f - uv.y); 
+    return float4(tex2D(TextureSamplerDiffuse, uv).rgb, 1.0f);
+}
+
+technique TextureFacesToCubeFaces
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL
+            HdrToEnvCubeMapVS();
+        PixelShader = compile PS_SHADERMODEL
+            Face2DToFaceCopyPS();
+    }
+};
 
 //____________________________________
 // shaders and technique CubemapToDiffuseIlluminationCubeMap

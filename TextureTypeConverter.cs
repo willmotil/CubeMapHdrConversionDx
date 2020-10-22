@@ -11,15 +11,71 @@ namespace Microsoft.Xna.Framework
     {
         private static PrimitiveScreenQuad screenQuad = new PrimitiveScreenQuad(false);
 
-        public static TextureCube RenderSphericalTexture2DToTextureCube(GraphicsDevice gd, Effect _textureCubeBuildEffect, Texture2D sourceTextureSpherical, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        public static TextureCube RenderSphericalTexture2DToTextureCube(GraphicsDevice gd, Effect _textureCubeBuildEffect, Texture2D source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
         {
             var pixelformat = SurfaceFormat.Color;
             if (useHdrFormat)
                 pixelformat = SurfaceFormat.Vector4;
             TextureCube textureCubeDestinationMap = new TextureCube(gd,sizeSquarePerFace, true, pixelformat);
-            RenderSphericalTexture2DToTextureCube(gd, _textureCubeBuildEffect, "SphericalToCubeMap", sourceTextureSpherical, ref textureCubeDestinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            RenderSphericalTexture2DToTextureCube(gd, _textureCubeBuildEffect, "SphericalToCubeMap", source, ref textureCubeDestinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
             return textureCubeDestinationMap;
         }
+
+        public static TextureCube RenderTextureCubeToTextureCube(GraphicsDevice gd, Effect _textureCubeBuildEffect, TextureCube source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        {
+            var pixelformat = SurfaceFormat.Color;
+            if (useHdrFormat)
+                pixelformat = SurfaceFormat.Vector4;
+            TextureCube destination = new TextureCube(gd, sizeSquarePerFace, generateMips, pixelformat);
+            RenderTextureCubeToTextureCube(gd, _textureCubeBuildEffect, "CubemapToDiffuseIlluminationCubeMap", source, ref destination, generateMips, useHdrFormat, sizeSquarePerFace);
+            return destination;
+        }
+
+        public static Texture2D RenderTextureCubeToSphericalTexture2D(GraphicsDevice gd, Effect _textureCubeBuildEffect, TextureCube source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        {
+            var pixelformat = SurfaceFormat.Color;
+            if (useHdrFormat)
+                pixelformat = SurfaceFormat.Vector4;
+            Texture2D destinationMap = new Texture2D(gd, sizeSquarePerFace, sizeSquarePerFace /2, generateMips, pixelformat);
+            RenderTextureCubeToSphericalTexture2D(gd, _textureCubeBuildEffect, "CubeMapToSpherical", source, ref destinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            return destinationMap;
+        }
+
+        public static Texture2D[] RenderTextureCubeToTexture2DArray(GraphicsDevice gd, Effect _textureCubeBuildEffect, TextureCube source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        {
+            var pixelformat = SurfaceFormat.Color;
+            if (useHdrFormat)
+                pixelformat = SurfaceFormat.Vector4;
+            Texture2D[] destinationMap = new Texture2D[6];
+            //for (int i = 0; i < 6; i++)
+            //    destinationMap[i] = new Texture2D(gd, sizeSquarePerFace, sizeSquarePerFace, generateMips, pixelformat);
+            RenderTextureCubeToTexture2DArray(gd, _textureCubeBuildEffect, "CubeMapToTexture", source, ref destinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            return destinationMap;
+        }
+
+        public static Texture2D RenderTexture2DArrayToSphericalTexture2D(GraphicsDevice gd, Effect _textureCubeBuildEffect, Texture2D[] source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        {
+            var pixelformat = SurfaceFormat.Color;
+            if (useHdrFormat)
+                pixelformat = SurfaceFormat.Vector4;
+            Texture2D destinationMap = new Texture2D(gd, sizeSquarePerFace, sizeSquarePerFace / 2, generateMips, pixelformat);
+            RenderTexture2DArrayToSphericalTexture2D(gd, _textureCubeBuildEffect, "TextureFacesToSpherical", source, ref destinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            return destinationMap;
+        }
+
+        public static TextureCube RenderTexture2DArrayToTextureCube(GraphicsDevice gd, Effect _textureCubeBuildEffect, Texture2D[] source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        {
+            var pixelformat = SurfaceFormat.Color;
+            if (useHdrFormat)
+                pixelformat = SurfaceFormat.Vector4;
+            TextureCube destination = new TextureCube(gd, sizeSquarePerFace, generateMips, pixelformat);
+            RenderTexture2DArrayToTextureCube(gd, _textureCubeBuildEffect, "TextureFacesToCubeFaces", source, ref destination, generateMips, useHdrFormat, sizeSquarePerFace);
+            return destination;
+        }
+
+        //_________________________________________________
+        //_________________________________________________
+        //
 
         /// <summary>
         /// Renders the hdr texture to a TextureCube.
@@ -224,7 +280,7 @@ namespace Microsoft.Xna.Framework
                         gd.SetRenderTarget(renderTargetCube, CubeMapFace.NegativeY);
                         break;
                 }
-                _hdrEffect.Parameters["FaceToMap"].SetValue(i); // render screenquad to face.
+                _hdrEffect.Parameters["FaceToMap"].SetValue(i);
                 foreach (EffectPass pass in _hdrEffect.CurrentTechnique.Passes)
                 {
                     pass.Apply();
