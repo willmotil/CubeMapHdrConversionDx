@@ -99,12 +99,12 @@ namespace CubeMapHdrConversionDx
             Console.WriteLine($"\n Rendered to scene.");
             if (_sphericalTexture2DEnviromentalMap != null)
             {
-                HdrLdrTextureCubeConverter.RenderSphericalTexture2DToTextureCube(GraphicsDevice, _textureCubeBuildEffect, "SphericalToCubeMap", _sphericalTexture2DEnviromentalMap, ref _textureCubeEnviroment, true, true, 512);
-                HdrLdrTextureCubeConverter.RenderTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, "CubemapToDiffuseIlluminationCubeMap", _textureCubeEnviroment, ref _textureCubeIblDiffuseIllumination, false, true, 128);
-                HdrLdrTextureCubeConverter.RenderTextureCubeToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, "CubeMapToSpherical", _textureCubeEnviroment, ref _generatedSphericalTexture2DFromCube, false, true, 512);
-                HdrLdrTextureCubeConverter.RenderTextureCubeToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, "CubeMapToTexture", _textureCubeEnviroment, ref _genTextureFaceArray, false, true, 256);
+                _textureCubeEnviroment = TextureTypeConverter.RenderSphericalTexture2DToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _sphericalTexture2DEnviromentalMap, true, true, 512);
+                TextureTypeConverter.RenderTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, "CubemapToDiffuseIlluminationCubeMap", _textureCubeEnviroment, ref _textureCubeIblDiffuseIllumination, false, true, 128);
+                TextureTypeConverter.RenderTextureCubeToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, "CubeMapToSpherical", _textureCubeEnviroment, ref _generatedSphericalTexture2DFromCube, false, true, 512);
+                TextureTypeConverter.RenderTextureCubeToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, "CubeMapToTexture", _textureCubeEnviroment, ref _genTextureFaceArray, false, true, 256);
                 //HdrLdrTextureCubeConverter.RenderTexture2DArrayToTextureCube(GraphicsDevice, _textureCubeBuildEffect, "EnvCubemapToDiffuseIlluminationCubeMap", _genTextureFaceArray, ref _textureCubeEnviroment, false, true, 128);
-                HdrLdrTextureCubeConverter.RenderTexture2DArrayToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, "TextureFacesToSpherical", _genTextureFaceArray, ref _generatedSphericalTexture2DFromFaceArray, false, true, 256);
+                TextureTypeConverter.RenderTexture2DArrayToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, "TextureFacesToSpherical", _genTextureFaceArray, ref _generatedSphericalTexture2DFromFaceArray, false, true, 256);
             }
         }
 

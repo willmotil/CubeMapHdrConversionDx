@@ -7,15 +7,25 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Microsoft.Xna.Framework
 {
-    public static class HdrLdrTextureCubeConverter
+    public static class TextureTypeConverter
     {
         private static PrimitiveScreenQuad screenQuad = new PrimitiveScreenQuad(false);
+
+        public static TextureCube RenderSphericalTexture2DToTextureCube(GraphicsDevice gd, Effect _textureCubeBuildEffect, Texture2D sourceTextureSpherical, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        {
+            var pixelformat = SurfaceFormat.Color;
+            if (useHdrFormat)
+                pixelformat = SurfaceFormat.Vector4;
+            TextureCube textureCubeDestinationMap = new TextureCube(gd,sizeSquarePerFace, true, pixelformat);
+            RenderSphericalTexture2DToTextureCube(gd, _textureCubeBuildEffect, "SphericalToCubeMap", sourceTextureSpherical, ref textureCubeDestinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            return textureCubeDestinationMap;
+        }
 
         /// <summary>
         /// Renders the hdr texture to a TextureCube.
         /// The ref is used to pass the ref variable directly thru here, its not a ref copy i guess.
         /// </summary>
-        public static void RenderSphericalTexture2DToTextureCube(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D sourceTextureSpherical, ref TextureCube textureCubeDestinationMap, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        private static void RenderSphericalTexture2DToTextureCube(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D sourceTextureSpherical, ref TextureCube textureCubeDestinationMap, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
         {
             gd.RasterizerState = RasterizerState.CullNone;
             var pixelformat = SurfaceFormat.Color;
