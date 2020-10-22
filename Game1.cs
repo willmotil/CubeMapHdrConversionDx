@@ -5,8 +5,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+
 namespace CubeMapHdrConversionDx
 {
+    
     public class Game1 : Game
     {
         #region class fields and stuff
