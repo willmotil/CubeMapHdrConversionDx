@@ -106,11 +106,20 @@ namespace CubeMapHdrConversionDx
             Console.WriteLine($"\n Rendered to scene.");
             if (_sphericalTexture2DEnviromentalMap != null)
             {
-                _textureCubeEnviroment = TextureTypeConverter.ConvertSphericalTexture2DToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _sphericalTexture2DEnviromentalMap, true, true, 512);             
+                _textureCubeEnviroment = TextureTypeConverter.ConvertSphericalTexture2DToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _sphericalTexture2DEnviromentalMap, true, true, 512);
+                
+                // texture cube  ...
+                // to cube
                 _textureCubeIblDiffuseIllumination = TextureTypeConverter.ConvertTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
+                // to spherical map
                 _generatedSphericalTexture2DFromCube = TextureTypeConverter.ConvertTextureCubeToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
+                // to array
                 _generatedTextureFaceArray = TextureTypeConverter.ConvertTextureCubeToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 256);
-                _generatedSphericalTexture2DFromFaceArray= TextureTypeConverter.ConvertTexture2DArrayToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
+                
+                // array to... 
+                // a spherical map
+                _generatedSphericalTexture2DFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
+                // another cube.  X
                 _generatedTextureCubeFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
             }
         }

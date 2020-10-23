@@ -60,6 +60,8 @@ struct FaceStruct
     float3 PositionNormal;
     float3 FaceNormal;
     float3 FaceUp;
+    float2 SphericalUv;
+    float2 Uv;
 };
 
 
@@ -75,7 +77,7 @@ FaceStruct UvFaceToCubeMapVector(float2 pos, int faceIndex)
 {
     FaceStruct output = (FaceStruct)0;
     float u = pos.x;
-    float v = pos.y;
+    float v = -pos.y;
     switch (abs(faceIndex))
     {
     case 1: //FACE_LEFT: CubeMapFace.NegativeX
@@ -99,12 +101,12 @@ FaceStruct UvFaceToCubeMapVector(float2 pos, int faceIndex)
         output.FaceUp = float3(0, 1, 0);
         break;
 
-    case 2: //FACE_TOP: CubeMapFace.PositiveY
+    case 3: //FACE_TOP: CubeMapFace.PositiveY  2
         output.PositionNormal = float3(u, 1.0f, -v);
         output.FaceNormal = float3(0, 1.0f, 0);
         output.FaceUp = float3(0, 0, 1);
         break;
-    case 3: //FACE_BOTTOM : CubeMapFace.NegativeY
+    case 2: //FACE_BOTTOM : CubeMapFace.NegativeY    3
         output.PositionNormal = float3(u, -1.0f, v);   // dir = float3(v, -1.0f, u);
         output.FaceNormal = float3(0, -1.0f, 0);
         output.FaceUp = float3(0, 0, -1);
@@ -116,6 +118,7 @@ FaceStruct UvFaceToCubeMapVector(float2 pos, int faceIndex)
         output.FaceUp = float3(0, 1, 0);
         break;
     }
+    output.Uv = (pos.xy + 1.0f) / 2.0f;
     //output.PositionNormal = new Vector3(output.PositionNormal.z, -output.PositionNormal.y, output.PositionNormal.x); // invert
     output.PositionNormal = normalize(output.PositionNormal);
     return output;
@@ -170,6 +173,15 @@ float3 EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(float2 uvCoords)
     v = float3(cos(hpi) * v.x + sin(hpi) * v.z, -v.y, -sin(hpi) * v.x + cos(hpi) * v.z);
     return v;
 }
+
+float2 PosCoordinatesToEquaRectangularUvSampleCoords(float2 posCoords)
+{
+    float2 uv = (posCoords.xy + 1.0f) / 2.0f;
+    float3 normal = EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(uv);
+    return CubeMapNormalTo2dEquaRectangularMapUvCoordinates(normal);
+}
+
+
 
 
 
@@ -284,7 +296,7 @@ float4 SphericalToCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
     FaceStruct face = UvFaceToCubeMapVector(input.Position3D, FaceToMap);
     float3 v = face.PositionNormal;
     float2 uv = CubeMapNormalTo2dEquaRectangularMapUvCoordinates(v);
-    uv = float2(uv.x, 1.0f - uv.y);  // raw dx transform ok in hind site this shortcut hack in was a bad idea.
+    //uv = float2(uv.x, 1.0f - uv.y);  // raw dx transform ok in hind site this shortcut hack in was a bad idea.
     //float2 texcoords = float2(uv.x, uv.y);  // i will have to perform this fix later on.
     float4 color = float4(tex2D(TextureSamplerDiffuse, uv).rgb, 1.0f);
     return color;
@@ -310,6 +322,7 @@ technique SphericalToCubeMap
 float4 CubeMapToSphericalPS(HdrToCubeMapVertexShaderOutput input) : COLOR
 {
     float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
+    //uv = float2(uv.x, 1.0f - uv.y);
     float3 n = EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(uv);
     return texCUBElod(CubeMapSampler, float4(n, 0.0f) );
 }
@@ -385,17 +398,17 @@ technique TextureFacesToSpherical
 
 
 //____________________________________
-// shaders and technique TextureFacesToSpherical
-// Copy enviromental Faces to 2d spherical
+// shaders and technique TextureFacesToCubeFaces
+// Copy enviromental individural Faces to cube map
 //____________________________________
 
 // render texture2d regular.
-float4 Face2DToFaceCopyPS(HdrToCubeMapVertexShaderOutput input) : COLOR
+float4 Faces2DToCubeFacesPS(HdrToCubeMapVertexShaderOutput input) : COLOR
 {
     float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
     // forced hack due to the line in SphericalToCubeMapPS uv = float2(uv.x, 1.0f - uv.y);
     // this should be removable on the condition i remove that and adjust everything to then be in proper alignment.
-    uv = float2(uv.x, 1.0f - uv.y); 
+    //uv = float2(uv.x, 1.0f - uv.y); 
     return float4(tex2D(TextureSamplerDiffuse, uv).rgb, 1.0f);
 }
 
@@ -406,7 +419,7 @@ technique TextureFacesToCubeFaces
         VertexShader = compile VS_SHADERMODEL
             HdrToEnvCubeMapVS();
         PixelShader = compile PS_SHADERMODEL
-            Face2DToFaceCopyPS();
+            Faces2DToCubeFacesPS();
     }
 };
 

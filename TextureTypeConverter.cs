@@ -10,14 +10,14 @@ namespace Microsoft.Xna.Framework
 {
     public static class TextureTypeConverter
     {
-        private static PrimitiveScreenQuad screenQuad = new PrimitiveScreenQuad(false);
+        private static PrimitiveScreenQuad screenQuad = new PrimitiveScreenQuad(false, 1);
 
         public static TextureCube ConvertSphericalTexture2DToTextureCube(GraphicsDevice gd, Effect _textureCubeBuildEffect, Texture2D source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
         {
             var pixelformat = SurfaceFormat.Color;
             if (useHdrFormat)
                 pixelformat = SurfaceFormat.Vector4;
-            TextureCube textureCubeDestinationMap = new TextureCube(gd,sizeSquarePerFace, true, pixelformat);
+            TextureCube textureCubeDestinationMap = new TextureCube(gd,sizeSquarePerFace, generateMips, pixelformat);
             RenderSphericalTexture2DToTextureCube(gd, _textureCubeBuildEffect, "SphericalToCubeMap", source, ref textureCubeDestinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
             return textureCubeDestinationMap;
         }
@@ -300,32 +300,48 @@ namespace Microsoft.Xna.Framework
         {
             public VertexPositionTexture[] vertices;
 
-            public PrimitiveScreenQuad(bool clockwise)
+            public PrimitiveScreenQuad(bool clockwise, float depth)
             {
-                var r = new Rectangle(-1, -1, 2, 2);
+                float left = -1;
+                float right = 1;
+                float top = -1;
+                float bottom = 1;
+
+                bool flipY = false; // this really has very little effect on anything as this is only used for the rendertarget duh.
+
                 vertices = new VertexPositionTexture[6];
                 //
                 if (clockwise)
                 {
-                    vertices[0] = new VertexPositionTexture(new Vector3(r.Left, r.Top, 0f), new Vector2(0f, 0f));  // p1
-                    vertices[1] = new VertexPositionTexture(new Vector3(r.Left, r.Bottom, 0f), new Vector2(0f, 1f)); // p0
-                    vertices[2] = new VertexPositionTexture(new Vector3(r.Right, r.Bottom, 0f), new Vector2(1f, 1f));// p3
+                    vertices[0] = GetVertex(new Vector3(left, top, depth), flipY);  // p1
+                    vertices[1] = GetVertex(new Vector3(left, bottom, depth), flipY); // p0
+                    vertices[2] = GetVertex(new Vector3(right, bottom, depth), flipY); // p3
 
-                    vertices[3] = new VertexPositionTexture(new Vector3(r.Right, r.Bottom, 0f), new Vector2(1f, 1f));// p3
-                    vertices[4] = new VertexPositionTexture(new Vector3(r.Right, r.Top, 0f), new Vector2(1f, 0f));// p2
-                    vertices[5] = new VertexPositionTexture(new Vector3(r.Left, r.Top, 0f), new Vector2(0f, 0f)); // p1
+                    vertices[3] = GetVertex(new Vector3(right, bottom, depth), flipY); // p3
+                    vertices[4] = GetVertex(new Vector3(right, top, depth), flipY); // p2
+                    vertices[5] = GetVertex(new Vector3(left, top, depth), flipY); // p1
                 }
                 else
                 {
-                    vertices[0] = new VertexPositionTexture(new Vector3(r.Left, r.Top, 0f), new Vector2(0f, 0f));  // p1
-                    vertices[2] = new VertexPositionTexture(new Vector3(r.Left, r.Bottom, 0f), new Vector2(0f, 1f)); // p0
-                    vertices[1] = new VertexPositionTexture(new Vector3(r.Right, r.Bottom, 0f), new Vector2(1f, 1f));// p3
+                    vertices[0] = GetVertex(new Vector3(left, top, depth), flipY);  // p1
+                    vertices[2] = GetVertex(new Vector3(left, bottom, depth), flipY); // p0
+                    vertices[1] = GetVertex(new Vector3(right, bottom, depth), flipY); // p3
 
-                    vertices[4] = new VertexPositionTexture(new Vector3(r.Right, r.Bottom, 0f), new Vector2(1f, 1f));// p3
-                    vertices[3] = new VertexPositionTexture(new Vector3(r.Right, r.Top, 0f), new Vector2(1f, 0f));// p2
-                    vertices[5] = new VertexPositionTexture(new Vector3(r.Left, r.Top, 0f), new Vector2(0f, 0f)); // p1
+                    vertices[4] = GetVertex(new Vector3(right, bottom, depth), flipY); // p3
+                    vertices[3] = GetVertex(new Vector3(right, top, depth), flipY); // p2
+                    vertices[5] = GetVertex(new Vector3(left, top, depth), flipY); // p1
                 }
             }
+        }
+        public static VertexPositionTexture GetVertex(Vector3 p, bool flipY)
+        {
+            var uv = (new Vector2(p.X, p.Y) + Vector2.One) / 2f;
+            if (flipY)
+            {
+                //p.Y = -p.Y;
+                uv.Y = 1.0f - uv.Y;
+            }
+            return new VertexPositionTexture(p, uv);
         }
     }
 }
