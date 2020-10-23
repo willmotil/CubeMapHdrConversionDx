@@ -198,9 +198,9 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
 
 
     // the following values are in degrees
-    float numberOfSamplesHemisphere = 5.0; // we want the smallest amount with good quality
+    float numberOfSamplesHemisphere = 15.0; // we want the smallest amount with good quality
     float numberOfSamplesAround = 4.0; // same as above
-    float hemisphereMaxAngle = 1.0f; // we really want 90
+    float hemisphereMaxAngle = 6.0f; // we really want 90
 
     float minimumAdjustment = 2.1f; // this is to help control the sampling geometry.
     float mipSampleLevel = 0; // this is the sample or mipmap level from the enviromental map we take the current pixel from.
@@ -284,7 +284,7 @@ float4 SphericalToCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
     FaceStruct face = UvFaceToCubeMapVector(input.Position3D, FaceToMap);
     float3 v = face.PositionNormal;
     float2 uv = CubeMapNormalTo2dEquaRectangularMapUvCoordinates(v);
-    //uv = float2(uv.x, 1.0f - uv.y);  // raw dx transform ok in hind site this shortcut hack in was a bad idea.
+    uv = float2(uv.x, 1.0f - uv.y);  // raw dx transform ok in hind site this shortcut hack in was a bad idea.
     //float2 texcoords = float2(uv.x, uv.y);  // i will have to perform this fix later on.
     float4 color = float4(tex2D(TextureSamplerDiffuse, uv).rgb, 1.0f);
     return color;
@@ -370,7 +370,6 @@ float4 TextureFacesToSphericalPS(HdrToCubeMapVertexShaderOutput input) : COLOR
     else
         clip(-1);
     return color;
-    //float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
 }
 
 technique TextureFacesToSpherical
@@ -396,7 +395,7 @@ float4 Face2DToFaceCopyPS(HdrToCubeMapVertexShaderOutput input) : COLOR
     float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
     // forced hack due to the line in SphericalToCubeMapPS uv = float2(uv.x, 1.0f - uv.y);
     // this should be removable on the condition i remove that and adjust everything to then be in proper alignment.
-    //uv = float2(uv.x, 1.0f - uv.y); 
+    uv = float2(uv.x, 1.0f - uv.y); 
     return float4(tex2D(TextureSamplerDiffuse, uv).rgb, 1.0f);
 }
 
