@@ -108,17 +108,17 @@ namespace CubeMapHdrConversionDx
             {
                 _textureCubeEnviroment = TextureTypeConverter.ConvertSphericalTexture2DToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _sphericalTexture2DEnviromentalMap, true, true, 512);             
                 _textureCubeIblDiffuseIllumination = TextureTypeConverter.ConvertTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
-                _generatedSphericalTexture2DFromCube = TextureTypeConverter.ConvertTextureCubeToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
-                _generatedTextureFaceArray = TextureTypeConverter.ConvertTextureCubeToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 256);
-                _generatedSphericalTexture2DFromFaceArray= TextureTypeConverter.ConvertTexture2DArrayToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
-                _generatedTextureCubeFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
+                //_generatedSphericalTexture2DFromCube = TextureTypeConverter.ConvertTextureCubeToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
+                //_generatedTextureFaceArray = TextureTypeConverter.ConvertTextureCubeToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 256);
+                //_generatedSphericalTexture2DFromFaceArray= TextureTypeConverter.ConvertTexture2DArrayToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
+                //_generatedTextureCubeFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
             }
         }
 
         public void SetupCamera()
         {
             // a 90 degree field of view is needed for the projection matrix.
-            _projectionBuildSkyCubeMatrix = Matrix.CreatePerspectiveFieldOfView(90 * (float)((3.14159265358f) / 180f), GraphicsDevice.Viewport.Width / GraphicsDevice.Viewport.Height, 0.01f, 1000f);
+            _projectionBuildSkyCubeMatrix = Matrix.CreatePerspectiveFieldOfView(90.0f * (3.14159265358f / 180f), GraphicsDevice.Viewport.Width / GraphicsDevice.Viewport.Height, 0.01f, 1000f);
             _camera = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(2, 2, 10), new Vector3(0, 0, 0), Vector3.UnitY, 0.1f, 10000f, 1f, true, false);
             _camera.TransformCamera(_camera.World.Translation, _targetLookAt, _camera.World.Up);
             _camera.Up = Vector3.Up;
@@ -164,7 +164,6 @@ namespace CubeMapHdrConversionDx
             if (_whichCubeMapToDraw < 0)
                 _whichCubeMapToDraw = 2;
 
-            _camera.Up = Vector3.Up;
             _camera.Update(_targetLookAt, _useDemoWaypoints, gameTime);
 
             msg =
@@ -213,11 +212,11 @@ namespace CubeMapHdrConversionDx
             _cubeDrawEffect.Parameters["CameraPosition"].SetValue(_camera.Position);
             _cubeDrawEffect.Parameters["World"].SetValue(_camera.World);
 
-            if (_whichCubeMapToDraw == 0)
+            if (_whichCubeMapToDraw == 0 && _textureCubeEnviroment != null)
                 skyCube.DrawPrimitiveCube(GraphicsDevice, _cubeDrawEffect, _textureCubeEnviroment);
-            if (_whichCubeMapToDraw == 1)
+            if (_whichCubeMapToDraw == 1 && _textureCubeIblDiffuseIllumination != null)
                 skyCube.DrawPrimitiveCube(GraphicsDevice, _cubeDrawEffect, _textureCubeIblDiffuseIllumination);
-            if (_whichCubeMapToDraw == 2)
+            if (_whichCubeMapToDraw == 2 && _generatedTextureCubeFromFaceArray != null)
                 skyCube.DrawPrimitiveCube(GraphicsDevice, _cubeDrawEffect, _generatedTextureCubeFromFaceArray);
         }
 
@@ -296,13 +295,12 @@ namespace CubeMapHdrConversionDx
             }
 
             xoffset += 220;
-            if (_sphericalTexture2DEnviromentalMap != null)
+            if (_generatedSphericalTexture2DFromFaceArray != null)
             {
                 _spriteBatch.Draw(_generatedSphericalTexture2DFromFaceArray, new Rectangle(xoffset, 0, 200, 100), Color.White);
                 _spriteBatch.DrawString(_font, "SphericalTexture2D \nFromFaceArray", new Vector2(xoffset, 10), textColor);
             }
         }
-
 
 
         #region helper functions

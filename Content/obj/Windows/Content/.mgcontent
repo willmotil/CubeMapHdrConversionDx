@@ -4,9 +4,9 @@
   <Platform>Windows</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/hdr_colorful_studio_2k.hdr</File>
-    <File>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/TextureCubeBuildEffect.fx</File>
-    <File>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/TextureCubeDrawEffect.fx</File>
+    <File>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/hdr_colorful_studio_2k.hdr</File>
+    <File>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/TextureCubeBuildEffect.fx</File>
+    <File>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/TextureCubeDrawEffect.fx</File>
   </SourceFiles>
   <DestFiles>
     <File xsi:nil="true" />
