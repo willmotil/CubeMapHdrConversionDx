@@ -171,19 +171,7 @@ float3 EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(float2 uvCoords)
     return v;
 }
 
-//float3 EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(float2 uvCoords)
-//{
-//    float pi = 3.14159265358f;
-//    float3 v = float3(0.0f, 0.0f, 0.0f);
-//    float2 uv = uvCoords;
-//    uv *= float2(2.0f * pi, pi);
-//    float siny = sin(uv.y);
-//    v.x = -sin(uv.x) * siny;
-//    v.y = cos(uv.y);
-//    v.z = -cos(uv.x) * siny;
-//    //v = new Vector3(v.Z, -v.Y, v.X);
-//    return v;
-//}
+
 
 // http://www.codinglabs.net/article_physically_based_rendering.aspx
 //
@@ -199,8 +187,8 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
     up = cross(input.FaceNormal, right);
 
     // the following values are in degrees
-    float numberOfSamplesHemisphere = 12; // we want the smallest amount with good quality
-    float numberOfSamplesAround = 12; // same as above
+    float numberOfSamplesHemisphere = 20; // we want the smallest amount with good quality
+    float numberOfSamplesAround = 30; // same as above
     float hemisphereMaxAngle = 45.0f; // we really want 90
 
     float minimumAdjustment = 2.1f; // this is to help control the sampling geometry.
@@ -240,16 +228,16 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
             //accumulatedColor += sampledColor * NdotS;
             //totalWeight += NdotS;
 
-            //accumulatedColor += sampledColor * (cos(theta) * sin(theta));
-            //totalWeight += cos(theta) * sin(theta);
+            accumulatedColor += sampledColor * (cos(theta) * sin(theta));
+            totalWeight += cos(theta) * sin(theta);
 
-            accumulatedColor += sampledColor * phiMuliplier;
-            totalWeight += phiMuliplier;
+            //accumulatedColor += sampledColor * phiMuliplier;
+            //totalWeight += phiMuliplier;
         }
 
     }
-    //float4 final = float4(PI * accumulatedColor / totalWeight, 1.0f );
-    float4 final = float4(accumulatedColor / totalWeight, 1.0f);
+    float4 final = float4(PI * accumulatedColor / totalWeight, 1.0f );
+    //float4 final = float4(accumulatedColor / totalWeight, 1.0f);
 
     // overlaid visualization.
     //float3 directColor = texCUBElod(CubeMapSampler, float4(normal, 0)).rgb;
@@ -446,7 +434,19 @@ technique CubemapToDiffuseIlluminationCubeMap
 
 
 
-
+//float3 EquaRectangularMapUvCoordinatesTo3dCubeMapNormal(float2 uvCoords)
+//{
+//    float pi = 3.14159265358f;
+//    float3 v = float3(0.0f, 0.0f, 0.0f);
+//    float2 uv = uvCoords;
+//    uv *= float2(2.0f * pi, pi);
+//    float siny = sin(uv.y);
+//    v.x = -sin(uv.x) * siny;
+//    v.y = cos(uv.y);
+//    v.z = -cos(uv.x) * siny;
+//    //v = new Vector3(v.Z, -v.Y, v.X);
+//    return v;
+//}
 
 
 

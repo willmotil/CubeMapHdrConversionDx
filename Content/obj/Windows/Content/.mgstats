@@ -1,4 +1,4 @@
 Source File,Dest File,Processor Type,Content Type,Source File Size,Dest File Size,Build Seconds
 "C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/hdr_colorful_studio_2k.hdr","C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/bin/Windows/Content/hdr_colorful_studio_2k.xnb","TextureProcessor","Texture2DContent",6616038,33554517,0.6077387
-"C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/TextureCubeBuildEffect.fx","C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/bin/Windows/Content/TextureCubeBuildEffect.xnb","EffectProcessor","CompiledEffectContent",15650,8776,0.6784558
+"C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/TextureCubeBuildEffect.fx","C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/bin/Windows/Content/TextureCubeBuildEffect.xnb","EffectProcessor","CompiledEffectContent",15650,8812,1.4494034
 "C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/TextureCubeDrawEffect.fx","C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/bin/Windows/Content/TextureCubeDrawEffect.xnb","EffectProcessor","CompiledEffectContent",2497,2622,0.412152
