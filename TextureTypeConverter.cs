@@ -22,6 +22,16 @@ namespace Microsoft.Xna.Framework
             return textureCubeDestinationMap;
         }
 
+        public static Texture2D[] ConvertSphericalTexture2DToTexture2DArray(GraphicsDevice gd, Effect _textureCubeBuildEffect, Texture2D source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        {
+            var pixelformat = SurfaceFormat.Color;
+            if (useHdrFormat)
+                pixelformat = SurfaceFormat.Vector4;
+            Texture2D[] destinationMap = new Texture2D[6];
+            RenderSphericalTexture2DToTexture2DArray(gd, _textureCubeBuildEffect, "SphericalToCubeMap", source, ref destinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            return destinationMap;
+        }
+
         public static TextureCube ConvertTextureCubeToTextureCube(GraphicsDevice gd, Effect _textureCubeBuildEffect, TextureCube source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
         {
             var pixelformat = SurfaceFormat.Color;
@@ -124,6 +134,33 @@ namespace Microsoft.Xna.Framework
                 }
             }
             textureCubeDestinationMap = renderTargetCube; // set the render to the specified texture cube.
+            gd.SetRenderTarget(null);
+        }
+
+        /// <summary>
+        /// Renders the hdr spherical map to a array of 6 texture2D faces using the designated effect and technique.
+        /// </summary>
+        private static void RenderSphericalTexture2DToTexture2DArray(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D source, ref Texture2D[] textureFaceArray, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        {
+            gd.RasterizerState = RasterizerState.CullNone;
+            var pixelformat = SurfaceFormat.Color;
+            if (useHdrFormat)
+                pixelformat = SurfaceFormat.Vector4;
+            textureFaceArray = new Texture2D[6];
+            _hdrEffect.CurrentTechnique = _hdrEffect.Techniques[Technique];
+            _hdrEffect.Parameters["Texture"].SetValue(source);
+            for (int i = 0; i < 6; i++)
+            {
+                var renderTarget2D = new RenderTarget2D(gd, sizeSquarePerFace, sizeSquarePerFace, generateMips, pixelformat, DepthFormat.None);
+                gd.SetRenderTarget(renderTarget2D);
+                _hdrEffect.Parameters["FaceToMap"].SetValue(i); // render screenquad to face.
+                foreach (EffectPass pass in _hdrEffect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    gd.DrawUserPrimitives(PrimitiveType.TriangleList, screenQuad.vertices, 0, 2);
+                }
+                textureFaceArray[i] = renderTarget2D; 
+            }
             gd.SetRenderTarget(null);
         }
 

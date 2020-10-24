@@ -318,6 +318,36 @@ technique SphericalToCubeMap
 };
 
 
+
+
+////____________________________________
+//// shaders and technique SphericalToTextureFace
+//// Copy 2d spherical hdr to TextureFaces
+////____________________________________
+//
+//float4 SphericalToTextureFacePS(HdrToCubeMapVertexShaderOutput input) : COLOR
+//{
+//    FaceStruct face = PosUvFaceToNormal(input.Position3D, FaceToMap);
+//    float3 v = face.PositionNormal;
+//    float2 uv = NormalTo2dSphericalUvCoordinates(v);
+//    uv = float2(uv.x, 1.0f - uv.y);  // raw dx transform ok in hind site this shortcut hack in was a bad idea.
+//    //float2 texcoords = float2(uv.x, uv.y);  // i will have to perform this fix later on.
+//    float4 color = float4(tex2D(TextureSamplerDiffuse, uv).rgb, 1.0f);
+//    return color;
+//}
+//
+//technique SphericalToTextureFace
+//{
+//    pass P0
+//    {
+//        VertexShader = compile VS_SHADERMODEL
+//            HdrToEnvCubeMapVS();
+//        PixelShader = compile PS_SHADERMODEL
+//            SphericalToCubeMapPS();
+//    }
+//};
+
+
 //____________________________________
 // shaders and technique CubemapToDiffuseIlluminationCubeMap
 // Generate diffuse illumination map from enviroment cubemap.

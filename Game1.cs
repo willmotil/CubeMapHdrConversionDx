@@ -67,7 +67,8 @@ namespace CubeMapHdrConversionDx
 
         protected override void Initialize()
         {
-            this.Window.Title = "SphereCube Image Hdr Mapping Effect Tests";
+            var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(typeof(Microsoft.Xna.Framework.Game).Assembly.Location).FileVersion;
+            this.Window.Title = $"SphereCube Image Hdr Mapping Effect Tests  {version}";
             this.Window.AllowUserResizing = true;
             this.Window.AllowAltF4 = true;
             this.Window.ClientSizeChanged += ClientResize;
@@ -109,23 +110,28 @@ namespace CubeMapHdrConversionDx
                 // spherical map to  texture cube    SphericalToCubeMap
                 _textureCubeEnviroment = TextureTypeConverter.ConvertSphericalTexture2DToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _sphericalTexture2DEnviromentalMap, true, true, 512);
 
-                // texture cube  ...
-                // to cube                                     CubemapToCubemap  DiffuseIlluminationCubeMap
-                _textureCubeIblDiffuseIllumination = TextureTypeConverter.ConvertTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
+                //// to texture face.                         SphericaToTextureArrayFaces
+                //_generatedTextureFaceArray = TextureTypeConverter.ConvertSphericalTexture2DToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, _sphericalTexture2DEnviromentalMap, true, true, 512);
 
-                // to array                                     CubeMapToTexture
+                // to array                                  CubeMapToTextureArray
                 _generatedTextureFaceArray = TextureTypeConverter.ConvertTextureCubeToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 256);
 
                 // array to... 
-                // to another cube.                         TextureFacesToCubeFaces
+                // to another cube.                        TextureFacesToCubeFaces
                 _generatedTextureCubeFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
 
                 // array to... 
                 // a spherical map
                 _generatedSphericalTexture2DFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
 
+                // cubemap to...
                 // to spherical map
                 _generatedSphericalTexture2DFromCube = TextureTypeConverter.ConvertTextureCubeToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
+
+                // texture cube  ...
+                // to cube                                     CubemapToCubemap  DiffuseIlluminationCubeMap
+                _textureCubeIblDiffuseIllumination = TextureTypeConverter.ConvertTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
+
             }
         }
 
