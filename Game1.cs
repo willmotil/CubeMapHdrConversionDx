@@ -33,7 +33,7 @@ namespace CubeMapHdrConversionDx
 
         private Matrix _projectionBuildSkyCubeMatrix;
 
-        private PrimitiveCube skyCube = new PrimitiveCube(100, false, false, true);
+        private PrimitiveCube skyCube = new PrimitiveCube(500, false, false, true);
         private PrimitiveCube[] cubes = new PrimitiveCube[5];
 
         private float _mipLevelTestValue = 0;
@@ -106,21 +106,26 @@ namespace CubeMapHdrConversionDx
             Console.WriteLine($"\n Rendered to scene.");
             if (_sphericalTexture2DEnviromentalMap != null)
             {
+                // spherical map to  texture cube    SphericalToCubeMap
                 _textureCubeEnviroment = TextureTypeConverter.ConvertSphericalTexture2DToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _sphericalTexture2DEnviromentalMap, true, true, 512);
-                
+
                 // texture cube  ...
-                // to cube
+                // to cube                                     CubemapToCubemap  DiffuseIlluminationCubeMap
                 _textureCubeIblDiffuseIllumination = TextureTypeConverter.ConvertTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
-                // to spherical map
-                _generatedSphericalTexture2DFromCube = TextureTypeConverter.ConvertTextureCubeToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
-                // to array
+
+                // to array                                     CubeMapToTexture
                 _generatedTextureFaceArray = TextureTypeConverter.ConvertTextureCubeToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 256);
-                
+
+                // array to... 
+                // to another cube.                         TextureFacesToCubeFaces
+                _generatedTextureCubeFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
+
                 // array to... 
                 // a spherical map
                 _generatedSphericalTexture2DFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
-                // another cube.  X
-                _generatedTextureCubeFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
+
+                // to spherical map
+                _generatedSphericalTexture2DFromCube = TextureTypeConverter.ConvertTextureCubeToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
             }
         }
 
@@ -128,7 +133,7 @@ namespace CubeMapHdrConversionDx
         {
             // a 90 degree field of view is needed for the projection matrix.
             _projectionBuildSkyCubeMatrix = Matrix.CreatePerspectiveFieldOfView(90.0f * (3.14159265358f / 180f), GraphicsDevice.Viewport.Width / GraphicsDevice.Viewport.Height, 0.01f, 1000f);
-            _camera = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(2, 2, 10), new Vector3(0, 0, 0), Vector3.UnitY, 0.1f, 10000f, 1f, true, false);
+            _camera = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(2, 2, 10), new Vector3(0, 0, 0), Vector3.UnitY, 0.1f, 10000f, 1f, true, true);
             _camera.TransformCamera(_camera.World.Translation, _targetLookAt, _camera.World.Up);
             _camera.Up = Vector3.Up;
             _camera.WayPointCycleDurationInTotalSeconds = 25f;
@@ -218,8 +223,8 @@ namespace CubeMapHdrConversionDx
         private void DrawPrimitiveSkyCube(GameTime gameTime)
         {
             _cubeDrawEffect.Parameters["Projection"].SetValue(_projectionBuildSkyCubeMatrix);
-            _cubeDrawEffect.Parameters["CameraPosition"].SetValue(_camera.Position);
-            _cubeDrawEffect.Parameters["World"].SetValue(_camera.World);
+            _cubeDrawEffect.Parameters["CameraPosition"].SetValue(Vector3.Zero); // _camera.Position
+            _cubeDrawEffect.Parameters["World"].SetValue(Matrix.CreateWorld(Vector3.Zero, _camera.Forward, _camera.Up)); //_camera.World
 
             if (_whichCubeMapToDraw == 0 && _textureCubeEnviroment != null)
                 skyCube.DrawPrimitiveCube(GraphicsDevice, _cubeDrawEffect, _textureCubeEnviroment);

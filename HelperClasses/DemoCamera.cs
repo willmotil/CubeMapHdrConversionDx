@@ -56,12 +56,12 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// This is a cinematic styled fixed camera it uses way points to traverse thru the world.
         /// </summary>
-        public DemoCamera(GraphicsDevice device, SpriteBatch spriteBatch, Texture2D dot, Vector3 pos, Vector3 target, Vector3 up, float nearClipPlane, float farClipPlane, float fieldOfView, bool perspective, bool inverseProjection)
+        public DemoCamera(GraphicsDevice device, SpriteBatch spriteBatch, Texture2D dot, Vector3 pos, Vector3 target, Vector3 up, float nearClipPlane, float farClipPlane, float fieldOfView, bool perspective, bool inverseOthographicProjection)
         {
             DrawHelpers.Initialize(device, spriteBatch, dot);
             wayPointCurvature = new MyImbalancedSpline();
             TransformCamera(pos, target, up);
-            SetProjection(device, nearClipPlane, farClipPlane, fieldOfView, perspective, inverseProjection);
+            SetProjection(device, nearClipPlane, farClipPlane, fieldOfView, perspective, inverseOthographicProjection);
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Microsoft.Xna.Framework
             _camera = Matrix.CreateWorld(_camPos, _forward, _camUp);
         }
 
-        public void SetProjection(GraphicsDevice device, float nearClipPlane, float farClipPlane, float fieldOfView, bool perspective, bool inverseProjection)
+        public void SetProjection(GraphicsDevice device, float nearClipPlane, float farClipPlane, float fieldOfView, bool perspective, bool inverseOrthoGraphicProjection)
         {
             _near = nearClipPlane;
             _far = farClipPlane;
@@ -143,11 +143,11 @@ namespace Microsoft.Xna.Framework
 
             // Allows a change to a spritebatch style orthagraphic or inverse styled persepective, e.g. a viewer imagining a forward z positive depth going into the screen.
             inv = 1f;
-            if (inverseProjection)
+            if (inverseOrthoGraphicProjection)
                 inv *= -1f;
 
             if (perspective)
-                _projection = Matrix.CreatePerspectiveFieldOfView(fieldOfView, device.Viewport.AspectRatio, _near, inv * _far);
+                _projection = Matrix.CreatePerspectiveFieldOfView(fieldOfView, device.Viewport.AspectRatio, _near, _far);
             else
                 _projection = Matrix.CreateOrthographicOffCenter(0, device.Viewport.Width, device.Viewport.Height, 0, _near, inv * _far);
         }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <SourceFile>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/TextureCubeBuildEffect.fx</SourceFile>
-  <SourceTime>2020-10-23T16:48:35.2730237-04:00</SourceTime>
+  <SourceTime>2020-10-23T19:33:00.8932621-04:00</SourceTime>
   <DestFile>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/bin/Windows/Content/TextureCubeBuildEffect.xnb</DestFile>
-  <DestTime>2020-10-23T16:48:38.7465658-04:00</DestTime>
+  <DestTime>2020-10-23T19:33:05.9758472-04:00</DestTime>
   <Importer>EffectImporter</Importer>
   <ImporterTime>2020-08-10T16:17:54-04:00</ImporterTime>
   <Processor>EffectProcessor</Processor>
