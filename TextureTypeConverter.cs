@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -331,9 +332,17 @@ namespace Microsoft.Xna.Framework
             gd.SetRenderTarget(null);
         }
 
+        public static void SaveTexture2D(string path, Texture2D t)
+        {
+            using (System.IO.Stream fs = System.IO.File.OpenWrite(path))
+            {
+                t.SaveAsPng(fs, t.Width, t.Height);
+            }
+        }
+
         #endregion
 
-        public class PrimitiveScreenQuad
+        private class PrimitiveScreenQuad
         {
             public VertexPositionTexture[] vertices;
 

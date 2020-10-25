@@ -89,17 +89,17 @@ namespace Microsoft.Xna.Framework
         {
             switch (i)
             {
-                case (int)CubeMapFace.NegativeX: // FACE_LEFT
+                case (int)CubeMapFace.NegativeX: // 1 FACE_LEFT
                     return matrixNegativeX;
-                case (int)CubeMapFace.NegativeZ: // FACE_FORWARD
+                case (int)CubeMapFace.NegativeZ: // 5 FACE_FORWARD
                     return matrixNegativeZ;
-                case (int)CubeMapFace.PositiveX: // FACE_RIGHT
+                case (int)CubeMapFace.PositiveX: // 0 FACE_RIGHT
                     return matrixPositiveX;
-                case (int)CubeMapFace.PositiveZ: // FACE_BACK
+                case (int)CubeMapFace.PositiveZ: // 4 FACE_BACK
                     return matrixPositiveZ;
-                case (int)CubeMapFace.PositiveY: // FACE_TOP
+                case (int)CubeMapFace.PositiveY: // 2 FACE_TOP
                     return matrixPositiveY;
-                case (int)CubeMapFace.NegativeY: // FACE_BOTTOM
+                case (int)CubeMapFace.NegativeY: // 3 FACE_BOTTOM
                     return matrixNegativeY;
                 default:
                     return matrixNegativeZ;

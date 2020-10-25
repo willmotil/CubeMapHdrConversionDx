@@ -72,13 +72,13 @@ struct FaceStruct
 // I made this up to do this tranform because i couldn't find the code to do it anywere.
 
 
-// used by SphericalToCubeMap  CubeMapToTexture  GetIrradiance
+// used by SphericalToCubeMap  CubeMapToTexture (includes CubeMapToCubeMap)  GetIrradiance
 //
 FaceStruct PosUvFaceToNormal(float2 pos, int faceIndex)
 {
     FaceStruct output = (FaceStruct)0;
     float u = pos.x;
-    float v = pos.y; // -pos.y changes top and bottom via negation and flips y this will also affect uv for top and bottom
+    float v = -pos.y; // -pos.y changes top and bottom via negation and flips y this will also affect uv for top and bottom
     switch (abs(faceIndex))
     {
     case 1: //FACE_LEFT: CubeMapFace.NegativeX
@@ -102,12 +102,12 @@ FaceStruct PosUvFaceToNormal(float2 pos, int faceIndex)
         output.FaceUp = float3(0, 1, 0);
         break;
 
-    case 2: //FACE_TOP: CubeMapFace.PositiveY 
+    case 3: //FACE_TOP: CubeMapFace.PositiveY  2 
         output.PositionNormal = float3(u, 1.0f, -v);
         output.FaceNormal = float3(0, 1.0f, 0);
         output.FaceUp = float3(0, 0, 1);
         break;
-    case 3: //FACE_BOTTOM : CubeMapFace.NegativeY   
+    case 2: //FACE_BOTTOM : CubeMapFace.NegativeY  3
         output.PositionNormal = float3(u, -1.0f, v);   // dir = float3(v, -1.0f, u);
         output.FaceNormal = float3(0, -1.0f, 0);
         output.FaceUp = float3(0, 0, -1);
@@ -124,6 +124,57 @@ FaceStruct PosUvFaceToNormal(float2 pos, int faceIndex)
     output.PositionNormal = normalize(output.PositionNormal);
     return output;
 }
+
+//FaceStruct PosUvFaceToNormal(float2 pos, int faceIndex)
+//{
+//    FaceStruct output = (FaceStruct)0;
+//    float u = pos.x;
+//    float v = -pos.y; // -pos.y changes top and bottom via negation and flips y this will also affect uv for top and bottom
+//    switch (abs(faceIndex))
+//    {
+//    case 1: //FACE_LEFT: CubeMapFace.NegativeX
+//        output.PositionNormal = float3(-1.0f, v, u);
+//        output.FaceNormal = float3(-1.0f, 0, 0);
+//        output.FaceUp = float3(0, 1, 0);
+//        break;
+//    case 5: // FACE_FORWARD: CubeMapFace.NegativeZ
+//        output.PositionNormal = float3(-u, v, -1.0f);
+//        output.FaceNormal = float3(0, 0, -1.0f);
+//        output.FaceUp = float3(0, 1, 0);
+//        break;
+//    case 0: //FACE_RIGHT: CubeMapFace.PositiveX
+//        output.PositionNormal = float3(1.0f, v, -u);
+//        output.FaceNormal = float3(1.0f, 0, 0);
+//        output.FaceUp = float3(0, 1, 0);
+//        break;
+//    case 4: //FACE_BACK: CubeMapFace.PositiveZ
+//        output.PositionNormal = float3(u, v, 1.0f);
+//        output.FaceNormal = float3(0, 0, 1.0f);
+//        output.FaceUp = float3(0, 1, 0);
+//        break;
+//
+//    case 3: //FACE_TOP: CubeMapFace.PositiveY  2 
+//        output.PositionNormal = float3(u, 1.0f, -v);
+//        output.FaceNormal = float3(0, 1.0f, 0);
+//        output.FaceUp = float3(0, 0, 1);
+//        break;
+//    case 2: //FACE_BOTTOM : CubeMapFace.NegativeY  3
+//        output.PositionNormal = float3(u, -1.0f, v);   // dir = float3(v, -1.0f, u);
+//        output.FaceNormal = float3(0, -1.0f, 0);
+//        output.FaceUp = float3(0, 0, -1);
+//        break;
+//
+//    default:
+//        output.PositionNormal = float3(-1.0f, v, u); // na
+//        output.FaceNormal = float3(-1.0f, 0, 0);
+//        output.FaceUp = float3(0, 1, 0);
+//        break;
+//    }
+//    output.Uv = (pos.xy + 1.0f) / 2.0f;
+//    //output.PositionNormal = new Vector3(output.PositionNormal.z, -output.PositionNormal.y, output.PositionNormal.x); // invert
+//    output.PositionNormal = normalize(output.PositionNormal);
+//    return output;
+//}
 
 // used by TextureFacesToSpherical
 //
@@ -175,8 +226,8 @@ float3 SphericalUvCoordinatesToNormal(float2 uvCoords)
     v.y = cos(uv.y);
     v.z = -cos(uv.x) * siny;
     // adjustment rotational.
-    //float hpi = PI / 2.0f;
-    //v = float3(cos(hpi) * v.x + sin(hpi) * v.z, -v.y, -sin(hpi) * v.x + cos(hpi) * v.z);
+    float hpi = PI / 2.0f;
+    v = float3(cos(hpi) * v.x + sin(hpi) * v.z, -v.y, -sin(hpi) * v.x + cos(hpi) * v.z);
     return v;
 }
 
@@ -279,9 +330,6 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
 
 
 
-
-
-
 //____________________________________
 // shaders and technique SphericalToCubeMap
 // Copy 2d spherical hdr to enviromental cubemap
@@ -300,7 +348,7 @@ float4 SphericalToCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
     FaceStruct face = PosUvFaceToNormal(input.Position3D, FaceToMap);
     float3 v = face.PositionNormal;
     float2 uv = NormalTo2dSphericalUvCoordinates(v);
-    uv = float2(uv.x, 1.0f - uv.y);  // raw dx transform ok in hind site this shortcut hack in was a bad idea.
+    //uv = float2(uv.x, 1.0f - uv.y);  // raw dx transform ok in hind site this shortcut hack in was a bad idea.
     //float2 texcoords = float2(uv.x, uv.y);  // i will have to perform this fix later on.
     float4 color = float4(tex2D(TextureSamplerDiffuse, uv).rgb, 1.0f);
     return color;
@@ -316,36 +364,6 @@ technique SphericalToCubeMap
             SphericalToCubeMapPS();
     }
 };
-
-
-
-
-////____________________________________
-//// shaders and technique SphericalToTextureFace
-//// Copy 2d spherical hdr to TextureFaces
-////____________________________________
-//
-//float4 SphericalToTextureFacePS(HdrToCubeMapVertexShaderOutput input) : COLOR
-//{
-//    FaceStruct face = PosUvFaceToNormal(input.Position3D, FaceToMap);
-//    float3 v = face.PositionNormal;
-//    float2 uv = NormalTo2dSphericalUvCoordinates(v);
-//    uv = float2(uv.x, 1.0f - uv.y);  // raw dx transform ok in hind site this shortcut hack in was a bad idea.
-//    //float2 texcoords = float2(uv.x, uv.y);  // i will have to perform this fix later on.
-//    float4 color = float4(tex2D(TextureSamplerDiffuse, uv).rgb, 1.0f);
-//    return color;
-//}
-//
-//technique SphericalToTextureFace
-//{
-//    pass P0
-//    {
-//        VertexShader = compile VS_SHADERMODEL
-//            HdrToEnvCubeMapVS();
-//        PixelShader = compile PS_SHADERMODEL
-//            SphericalToCubeMapPS();
-//    }
-//};
 
 
 //____________________________________
@@ -463,6 +481,7 @@ float4 TextureFacesToSphericalPS(HdrToCubeMapVertexShaderOutput input) : COLOR
 {
     // We are looping the spherical texture we will need to do this 6 times and we must know the Face of which the position we are on represents..
     float2 uv = (input.Position3D.xy + 1.0f) / 2.0f;
+    uv = float2(uv.x, 1.0f - uv.y);
     float3 n = SphericalUvCoordinatesToNormal(uv);
     int sphericalFace;
     float2 sample_uv = NormalToUvFace(n, sphericalFace);

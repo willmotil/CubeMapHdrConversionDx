@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+// https://hdrihaven.com/hdri/?h=schadowplatz
+
 
 namespace CubeMapHdrConversionDx
 {
@@ -83,7 +85,7 @@ namespace CubeMapHdrConversionDx
             _cubeDrawEffect = Content.Load<Effect>("TextureCubeDrawEffect");
 
             // Hdr's TextureFormat option in the content pipeline editor needs to be set to none instead of color.
-            _sphericalTexture2DEnviromentalMap = Content.Load<Texture2D>("hdr_colorful_studio_2k");  
+            _sphericalTexture2DEnviromentalMap = Content.Load<Texture2D>("hdr_royal_esplanade_2k");  // "hdr_colorful_studio_2k" "schadowplatz_2k"
             _initialLoadedFormat = _sphericalTexture2DEnviromentalMap.Format;
 
             LoadPrimitives();
@@ -110,14 +112,14 @@ namespace CubeMapHdrConversionDx
                 // spherical map to  texture cube    SphericalToCubeMap
                 _textureCubeEnviroment = TextureTypeConverter.ConvertSphericalTexture2DToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _sphericalTexture2DEnviromentalMap, true, true, 512);
 
-                //// to texture face.                         SphericaToTextureArrayFaces
+                //// to texture face.                       SphericaToTextureArrayFaces
                 //_generatedTextureFaceArray = TextureTypeConverter.ConvertSphericalTexture2DToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, _sphericalTexture2DEnviromentalMap, true, true, 512);
 
-                // to array                                  CubeMapToTextureArray
-                _generatedTextureFaceArray = TextureTypeConverter.ConvertTextureCubeToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 256);
+                // to array                                     CubeMapToTextureArrayFaces
+                _generatedTextureFaceArray = TextureTypeConverter.ConvertTextureCubeToTexture2DArray(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, false, 256);
 
                 // array to... 
-                // to another cube.                        TextureFacesToCubeFaces
+                // to another cube.                         FaceArrayToCubeFaces
                 _generatedTextureCubeFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
 
                 // array to... 
@@ -177,6 +179,17 @@ namespace CubeMapHdrConversionDx
                 CreateIblCubeMaps();
                 stopwatch.Stop();
                 Console.WriteLine($" Time elapsed: { stopwatch.Elapsed.TotalMilliseconds}ms   {stopwatch.Elapsed.TotalSeconds}sec ");
+            }
+
+            if (IsPressedWithDelay(Keys.F7, gameTime))
+            {
+
+                for (int i = 0; i < 6; i++)
+                {
+                    var path = @"C:\Users\will\MainFiles\Output\face" + i.ToString()+@".png";
+                    Console.WriteLine(path);
+                    TextureTypeConverter.SaveTexture2D(path, _generatedTextureFaceArray[i]);
+                }
             }
 
             if (_whichCubeMapToDraw > 2)
