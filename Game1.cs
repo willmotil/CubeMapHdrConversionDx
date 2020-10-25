@@ -114,34 +114,6 @@ namespace CubeMapHdrConversionDx
             sbpPos = _camera.CameraWorldPositionVectorForPerspectiveSpriteBatch(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 1f);
         }
 
-        public void DetermineRectanglePositionsAddToQuads()
-        {
-            int xoffset = 0;
-            r_sphericalTexture2DEnviromentalMap = new Rectangle(xoffset, 0, 200, 100);
-            xoffset += 120;
-            r_face4_Left = new Rectangle(xoffset + 0, 105, 95, 95);
-            r_face0_Forward = new Rectangle(xoffset + 100, 105, 95, 95);
-            r_face5_Right = new Rectangle(xoffset + 200, 105, 95, 95);
-            r_face1_Back = new Rectangle(xoffset + 300, 105, 95, 95);
-            r_face3_Top = new Rectangle(xoffset + 100, 5, 95, 95);
-            r_face2_Bottom = new Rectangle(xoffset + 100, 205, 95, 95);
-            xoffset += 220;
-            r_generatedSphericalTexture2DFromCube = new Rectangle(xoffset, 0, 200, 100);
-            xoffset += 220;
-            r_generatedSphericalTexture2DFromFaceArray = new Rectangle(xoffset, 0, 200, 100);
-
-            float depth = 1;
-            scrQuads.AddVertexRectangleToBuffer(r_sphericalTexture2DEnviromentalMap, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face4_Left, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face0_Forward, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face5_Right, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face1_Back, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face3_Top, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face2_Bottom, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_generatedSphericalTexture2DFromCube, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_generatedSphericalTexture2DFromFaceArray, depth);
-        }
-
         public void LoadPrimitives()
         {
             for (int i = 0; i < 5; i++)
@@ -295,11 +267,11 @@ namespace CubeMapHdrConversionDx
 
             _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["RenderCubeMap"];
 
-            //DrawPrimitiveSkyCube(gameTime);
+            DrawPrimitiveSkyCube(gameTime);
 
-            //DrawPrimitiveSceneCubes(gameTime);
+            DrawPrimitiveSceneCubes(gameTime);
 
-            PrimitiveDrawLoadedAndGeneratedTextures();
+            //PrimitiveDrawLoadedAndGeneratedTextures();
         }
 
         private void DrawPrimitiveSkyCube(GameTime gameTime)
@@ -343,66 +315,12 @@ namespace CubeMapHdrConversionDx
 
         }
 
-        public void PrimitiveDrawLoadedAndGeneratedTextures()
-        {
-            sbpPos = _camera.CameraWorldPositionVectorForPerspectiveSpriteBatch(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 1f);
-            //sbpView = _camera.ViewMatrixForPerspectiveSpriteBatch(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 90 * (float)((3.14159265358f) / 180f), Vector3.Forward,Vector3.Down);
-            sbpWorld = _camera.GetWorldMatrixForPerspectiveProjectionAlignedToSpritebatch(GraphicsDevice,Vector3.Up);
-
-            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-
-            _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["QuadDraw"];
-            _drawingEffect.Parameters["Projection"].SetValue(_projectionBuildSkyCubeMatrix);
-            _drawingEffect.Parameters["View"].SetValue(Matrix.Invert(sbpWorld));
-            _drawingEffect.Parameters["CameraPosition"].SetValue(sbpPos); // _camera.Position // Vector3.Zero
-            _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);   //Matrix.CreateWorld(Vector3.Zero, Vector3.Forward, Vector3.Down)); //_camera.World
-
-            int xoffset = 0;
-            Color textColor = Color.White;
-
-            if (_sphericalTexture2DEnviromentalMap != null)
-            {
-                _drawingEffect.Parameters["TextureA"].SetValue(_sphericalTexture2DEnviromentalMap);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 0, 1);
-            }
-
-            xoffset += 120;
-            if (_generatedTextureFaceArray != null)
-            {
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[4]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 1, 1);
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[0]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 2, 1);
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[5]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 3, 1);
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[1]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 4, 1);
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[2]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 5, 1);
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[3]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 6, 1);
-            }
-
-            xoffset += 220;
-            if (_generatedSphericalTexture2DFromCube != null)
-            {
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedSphericalTexture2DFromCube);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 7, 1);
-            }
-
-            xoffset += 220;
-            if (_generatedSphericalTexture2DFromFaceArray != null)
-            {
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedSphericalTexture2DFromFaceArray);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 8, 1);
-            }
-        }
 
         public void DrawSpriteBatches(GameTime gameTime)
         {
             _spriteBatch.Begin();
 
-            //SpriteBatchDrawLoadedAndGeneratedTextures();
+            SpriteBatchDrawLoadedAndGeneratedTextures();
 
             _camera.DrawCurveThruWayPointsWithSpriteBatch(1.5f, new Vector3(GraphicsDevice.Viewport.Bounds.Right -100, 1, GraphicsDevice.Viewport.Bounds.Bottom - 100), 1, gameTime);
 
@@ -450,6 +368,90 @@ namespace CubeMapHdrConversionDx
             {
                 _spriteBatch.Draw(_generatedSphericalTexture2DFromFaceArray, new Rectangle(xoffset, 0, 200, 100), Color.White);
                 _spriteBatch.DrawString(_font, "SphericalTexture2D \nFromFaceArray", new Vector2(xoffset, 10), textColor);
+            }
+        }
+
+
+
+        public void DetermineRectanglePositionsAddToQuads()
+        {
+            int xoffset = 0;
+            r_sphericalTexture2DEnviromentalMap = new Rectangle(xoffset, 0, 200, 100);
+            xoffset += 120;
+            r_face4_Left = new Rectangle(xoffset + 0, 105, 95, 95);
+            r_face0_Forward = new Rectangle(xoffset + 100, 105, 95, 95);
+            r_face5_Right = new Rectangle(xoffset + 200, 105, 95, 95);
+            r_face1_Back = new Rectangle(xoffset + 300, 105, 95, 95);
+            r_face3_Top = new Rectangle(xoffset + 100, 5, 95, 95);
+            r_face2_Bottom = new Rectangle(xoffset + 100, 205, 95, 95);
+            xoffset += 220;
+            r_generatedSphericalTexture2DFromCube = new Rectangle(xoffset, 0, 200, 100);
+            xoffset += 220;
+            r_generatedSphericalTexture2DFromFaceArray = new Rectangle(xoffset, 0, 200, 100);
+
+            float depth = 1;
+            scrQuads.AddVertexRectangleToBuffer(r_sphericalTexture2DEnviromentalMap, depth);
+            scrQuads.AddVertexRectangleToBuffer(r_face4_Left, depth);
+            scrQuads.AddVertexRectangleToBuffer(r_face0_Forward, depth);
+            scrQuads.AddVertexRectangleToBuffer(r_face5_Right, depth);
+            scrQuads.AddVertexRectangleToBuffer(r_face1_Back, depth);
+            scrQuads.AddVertexRectangleToBuffer(r_face3_Top, depth);
+            scrQuads.AddVertexRectangleToBuffer(r_face2_Bottom, depth);
+            scrQuads.AddVertexRectangleToBuffer(r_generatedSphericalTexture2DFromCube, depth);
+            scrQuads.AddVertexRectangleToBuffer(r_generatedSphericalTexture2DFromFaceArray, depth);
+        }
+        public void PrimitiveDrawLoadedAndGeneratedTextures()
+        {
+            sbpPos = _camera.CameraWorldPositionVectorForPerspectiveSpriteBatch(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 1f);
+            //sbpView = _camera.ViewMatrixForPerspectiveSpriteBatch(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 90 * (float)((3.14159265358f) / 180f), Vector3.Forward,Vector3.Down);
+            sbpWorld = _camera.GetWorldMatrixForPerspectiveProjectionAlignedToSpritebatch(GraphicsDevice, Vector3.Up);
+
+            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+
+            _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["QuadDraw"];
+            _drawingEffect.Parameters["Projection"].SetValue(_projectionBuildSkyCubeMatrix);
+            _drawingEffect.Parameters["View"].SetValue(Matrix.Invert(sbpWorld));
+            _drawingEffect.Parameters["CameraPosition"].SetValue(sbpPos); // _camera.Position // Vector3.Zero
+            _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);   //Matrix.CreateWorld(Vector3.Zero, Vector3.Forward, Vector3.Down)); //_camera.World
+
+            int xoffset = 0;
+            Color textColor = Color.White;
+
+            if (_sphericalTexture2DEnviromentalMap != null)
+            {
+                _drawingEffect.Parameters["TextureA"].SetValue(_sphericalTexture2DEnviromentalMap);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 0, 1);
+            }
+
+            xoffset += 120;
+            if (_generatedTextureFaceArray != null)
+            {
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[4]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 1, 1);
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[0]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 2, 1);
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[5]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 3, 1);
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[1]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 4, 1);
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[2]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 5, 1);
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[3]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 6, 1);
+            }
+
+            xoffset += 220;
+            if (_generatedSphericalTexture2DFromCube != null)
+            {
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedSphericalTexture2DFromCube);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 7, 1);
+            }
+
+            xoffset += 220;
+            if (_generatedSphericalTexture2DFromFaceArray != null)
+            {
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedSphericalTexture2DFromFaceArray);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 8, 1);
             }
         }
 
