@@ -44,14 +44,6 @@ namespace Microsoft.Xna.Framework
             wayPointReference = waypoints;
             wayPointCurvature.SetWayPoints(waypoints, numberOfSegments, connectEnds);
         }
-        public Matrix GetViewMatrixForPerspectiveProjectionAlignedToSpritebatch(GraphicsDevice device)
-        {
-            var dist = -((1f / (float)Math.Tan(_fieldOfView / 2)) * (device.Viewport.Height / 2));
-            var pos = new Vector3(device.Viewport.Width / 2, device.Viewport.Height / 2, dist);
-            var target = new Vector3(0, 0, 1) + pos;
-            return Matrix.CreateLookAt(pos, target, _camUp);
-        }
-
 
         /// <summary>
         /// This is a cinematic styled fixed camera it uses way points to traverse thru the world.
@@ -150,6 +142,31 @@ namespace Microsoft.Xna.Framework
                 _projection = Matrix.CreatePerspectiveFieldOfView(fieldOfView, device.Viewport.AspectRatio, _near, _far);
             else
                 _projection = Matrix.CreateOrthographicOffCenter(0, device.Viewport.Width, device.Viewport.Height, 0, _near, inv * _far);
+        }
+
+        public Matrix ViewMatrixForPerspectiveSpriteBatch(float width, float height, float _fov, Vector3 forward, Vector3 up)
+        {
+            var pos = new Vector3(width / 2, height / 2, -((1f / (float)Math.Tan(_fov / 2)) * (height / 2)));
+            return Matrix.Invert(Matrix.CreateWorld(pos, forward + pos, up));
+        }
+        public Matrix CameraMatrixForPerspectiveSpriteBatch(float width, float height, float _fov, Vector3 forward, Vector3 up)
+        {
+            var pos = new Vector3(width / 2, height / 2, -((1f / (float)Math.Tan(_fov / 2)) * (height / 2)));
+            return Matrix.CreateWorld(pos, forward + pos, up);
+        }
+
+        public Matrix GetWorldMatrixForPerspectiveProjectionAlignedToSpritebatch(GraphicsDevice device, Vector3 up)
+        {
+            var dist = -((1f / (float)Math.Tan(_fieldOfView / 2)) * (device.Viewport.Height / 2));
+            var pos = new Vector3(device.Viewport.Width / 2, device.Viewport.Height / 2, dist);
+            var target = new Vector3(0, 0, 1) + pos;
+            return Matrix.CreateWorld(_camPos, _forward, up);
+        }
+
+        public Vector3 CameraWorldPositionVectorForPerspectiveSpriteBatch(float width, float height, float _fov)
+        {
+            var pos = new Vector3(width / 2, height / 2, -((1f / (float)Math.Tan(_fov / 2)) * (height / 2)));
+            return pos;
         }
 
         public void CurveThruWayPoints(Vector3 targetPosition, Vector3[] waypoints, GameTime gameTime)

@@ -18,6 +18,13 @@ float3 CameraPosition;
 int testValue1;
 
 
+Texture TextureA; // primary texture.
+sampler TextureSamplerA = sampler_state
+{
+    texture = <TextureA>;
+    //magfilter = LINEAR; //minfilter = LINEAR; //mipfilter = LINEAR; //AddressU = mirror; //AddressV = mirror; 
+};
+
 TextureCube CubeMap;
 samplerCUBE CubeMapSampler = sampler_state
 {
@@ -34,19 +41,19 @@ samplerCUBE CubeMapSampler = sampler_state
 //____________________________________
 
 
-struct RenderCubeVertexShaderInput
+struct PNTVertexShaderInput
 {
     float4 Position : POSITION0;
     float3 Normal : NORMAL0;
-    float2 TexureCoordinate : TEXCOORD0;
+    float2 TextureCoordinate : TEXCOORD0;
 };
 
-struct RenderCubeVertexShaderOutput
+struct PNTVertexShaderOutput
 {
     float4 Position : SV_POSITION;
     float3 Position3D : TEXCOORD1;
     float3 Normal3D : TEXCOORD2;
-    float2 TexureCoordinate : TEXCOORD0;
+    float2 TextureCoordinate : TEXCOORD0;
 };
 
 
@@ -55,22 +62,22 @@ struct RenderCubeVertexShaderOutput
 // shaders and technique  RenderCubeMap
 //____________________________________
 
-RenderCubeVertexShaderOutput RenderCubeMapVS(in RenderCubeVertexShaderInput input)
+PNTVertexShaderOutput RenderCubeMapVS(in PNTVertexShaderInput input)
 {
-    RenderCubeVertexShaderOutput output;
+    PNTVertexShaderOutput output;
     float4x4 vp = mul(View, Projection);
     float4 pos = mul(input.Position, World);
     float4 norm = mul(input.Normal, World);
     output.Position = mul(pos, vp);
     output.Position3D = mul(pos.xyz, View);
     output.Normal3D = norm.xyz;
-    output.TexureCoordinate = input.TexureCoordinate;
+    output.TextureCoordinate = input.TextureCoordinate;
     return output;
 }
 
-float4 RenderCubeMapPS(RenderCubeVertexShaderOutput input) : COLOR
+float4 RenderCubeMapPS(PNTVertexShaderOutput input) : COLOR
 {
-    //float4 baseColor = tex2D(TextureSamplerDiffuse, input.TexureCoordinate); 
+    //float4 baseColor = tex2D(TextureSamplerDiffuse, input.TextureCoordinate); 
     ////clip(baseColor.a - .01f); // just straight clip super low alpha.
     //float3 P = input.Position3D;
     //float3 N = normalize(input.Normal3D.xyz);
@@ -96,3 +103,37 @@ technique RenderCubeMap
             RenderCubeMapPS();
     }
 };
+
+
+//____________________________________
+// shaders and technique  QuadDraw
+//____________________________________
+
+PNTVertexShaderOutput VertexShaderQuadDraw(PNTVertexShaderInput input)
+{
+    PNTVertexShaderOutput output;
+    float4x4 vp = mul(View, Projection);
+    float4 pos = mul(input.Position, World);
+    float4 norm = mul(input.Normal, World);
+    output.Position = mul(pos, vp);
+    output.Position3D = mul(pos.xyz, View);
+    output.Normal3D = norm.xyz;
+    output.TextureCoordinate = input.TextureCoordinate;
+    return output;
+}
+float4 PixelShaderQuadDraw(PNTVertexShaderOutput input) : COLOR
+{
+    float4 color = tex2D(TextureSamplerA, input.TextureCoordinate); // *input.Color;
+    return color;
+}
+
+technique QuadDraw
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL
+            VertexShaderQuadDraw();
+        PixelShader = compile PS_SHADERMODEL
+            PixelShaderQuadDraw();
+    }
+}
