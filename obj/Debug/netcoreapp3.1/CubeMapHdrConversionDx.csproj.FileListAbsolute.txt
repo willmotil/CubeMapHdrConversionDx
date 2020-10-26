@@ -115,3 +115,4 @@ C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMap
 C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.csprojAssemblyReference.cache
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content\schadowplatz_2k.xnb
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content\hdr_royal_esplanade_2k.xnb
+C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.csprojAssemblyReference.cache
