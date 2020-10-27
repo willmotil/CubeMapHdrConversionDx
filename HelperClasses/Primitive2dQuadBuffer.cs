@@ -10,32 +10,38 @@ namespace Microsoft.Xna.Framework
     {
         List<VertexPositionNormalTexture> _verticeList = new List<VertexPositionNormalTexture>();
         VertexPositionNormalTexture[] _vertices;
-        public void AddVertexRectangleToBuffer(Rectangle r, float depth)
+        public void AddVertexRectangleToBuffer(GraphicsDevice gd, Rectangle r, float depth)
         {
             //if (GraphicsDevice.RasterizerState != RasterizerState.CullClockwise)
+            //var scalar = new Vector3(1f / (gd.Viewport.Width /2), 1f / (gd.Viewport.Height / 2), 1f);
+            var scalar = new Vector3(1f / (gd.Viewport.Width ), 1f / (gd.Viewport.Height ), 1f);
+            //scalar = new Vector3(1, 1, 1);
             var normal = Vector3.Normalize(new Vector3(0, 0, depth));
-            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Left, r.Top, depth), normal, new Vector2(0f, 0f))); ;  // p1
-            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Left, r.Bottom, depth), normal, new Vector2(0f, 1f))); // p0
-            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Right, r.Bottom, depth), normal, new Vector2(1f, 1f)));// p3
+            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Left, r.Top, depth) * scalar, normal, new Vector2(0f, 0f))); ;  // p1
+            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Left, r.Bottom, depth) * scalar, normal, new Vector2(0f, 1f))); // p0
+            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Right, r.Bottom, depth) * scalar, normal, new Vector2(1f, 1f)));// p3
 
-            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Right, r.Bottom, depth), normal, new Vector2(1f, 1f)));// p3
-            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Right, r.Top, depth), normal, new Vector2(1f, 0f)));// p2
-            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Left, r.Top, depth), normal, new Vector2(0f, 0f))); // p1
+            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Right, r.Bottom, depth) * scalar, normal, new Vector2(1f, 1f)));// p3
+            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Right, r.Top, depth) * scalar, normal, new Vector2(1f, 0f)));// p2
+            _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Left, r.Top, depth) * scalar, normal, new Vector2(0f, 0f))); // p1
 
             _vertices = _verticeList.ToArray();
         }
 
-        public void AlterVertexRectanglePositionInBuffer(int index, Rectangle r, float depth)
+        public void AlterVertexRectanglePositionInBuffer(GraphicsDevice gd, int index, Rectangle r, float depth)
         {
+            var scalar = new Vector3(1f / (gd.Viewport.Width / 2), 1f / (gd.Viewport.Height / 2), 1f);
+            //scalar = new Vector3(1, 1, 1);
             // Triangle 1
-            _vertices[index + 0].Position = new Vector3(r.Left, r.Top, depth);  // p1
-            _vertices[index + 1].Position = new Vector3(r.Left, r.Bottom, depth); // p0
-            _vertices[index + 2].Position = new Vector3(r.Right, r.Bottom, depth); // p3
+            _vertices[index + 0].Position = new Vector3(r.Left, r.Top, depth)* scalar;  // p1
+            _vertices[index + 1].Position = new Vector3(r.Left, r.Bottom, depth) * scalar; // p0
+            _vertices[index + 2].Position = new Vector3(r.Right, r.Bottom, depth) * scalar; // p3
             // Triangle 2
-            _vertices[index + 3].Position = new Vector3(r.Right, r.Bottom, depth);// p3
-            _vertices[index + 4].Position = new Vector3(r.Right, r.Top, depth); // p2
-            _vertices[index + 5].Position = new Vector3(r.Left, r.Top, depth); // p1
+            _vertices[index + 3].Position = new Vector3(r.Right, r.Bottom, depth) * scalar;// p3
+            _vertices[index + 4].Position = new Vector3(r.Right, r.Top, depth) * scalar; // p2
+            _vertices[index + 5].Position = new Vector3(r.Left, r.Top, depth) * scalar; // p1
         }
+
         public void DrawQuadBuffer(GraphicsDevice device, Effect effect)
         {
             if (_vertices != null)

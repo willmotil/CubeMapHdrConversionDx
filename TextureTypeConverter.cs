@@ -19,7 +19,7 @@ namespace Microsoft.Xna.Framework
             if (useHdrFormat)
                 pixelformat = SurfaceFormat.Vector4;
             TextureCube textureCubeDestinationMap = new TextureCube(gd,sizeSquarePerFace, generateMips, pixelformat);
-            RenderSphericalTexture2DToTextureCube(gd, _textureCubeBuildEffect, "SphericalToCubeMap", source, ref textureCubeDestinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            RenderSphericalTexture2DToTextureCube(gd, _textureCubeBuildEffect, "SphericalToCubeMap", source, ref textureCubeDestinationMap, generateMips, pixelformat, sizeSquarePerFace);
             return textureCubeDestinationMap;
         }
 
@@ -29,7 +29,7 @@ namespace Microsoft.Xna.Framework
             if (useHdrFormat)
                 pixelformat = SurfaceFormat.Vector4;
             Texture2D[] destinationMap = new Texture2D[6];
-            RenderSphericalTexture2DToTexture2DArray(gd, _textureCubeBuildEffect, "SphericalToCubeMap", source, ref destinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            RenderSphericalTexture2DToTexture2DArray(gd, _textureCubeBuildEffect, "SphericalToCubeMap", source, ref destinationMap, generateMips, pixelformat, sizeSquarePerFace);
             return destinationMap;
         }
 
@@ -39,7 +39,7 @@ namespace Microsoft.Xna.Framework
             if (useHdrFormat)
                 pixelformat = SurfaceFormat.Vector4;
             TextureCube destination = new TextureCube(gd, sizeSquarePerFace, generateMips, pixelformat);
-            RenderTextureCubeToTextureCube(gd, _textureCubeBuildEffect, "CubemapToDiffuseIlluminationCubeMap", source, ref destination, generateMips, useHdrFormat, sizeSquarePerFace);
+            RenderTextureCubeToTextureCube(gd, _textureCubeBuildEffect, "CubemapToDiffuseIlluminationCubeMap", source, ref destination, generateMips, pixelformat, sizeSquarePerFace);
             return destination;
         }
 
@@ -49,7 +49,7 @@ namespace Microsoft.Xna.Framework
             if (useHdrFormat)
                 pixelformat = SurfaceFormat.Vector4;
             Texture2D destinationMap = new Texture2D(gd, sizeSquarePerFace, sizeSquarePerFace /2, generateMips, pixelformat);
-            RenderTextureCubeToSphericalTexture2D(gd, _textureCubeBuildEffect, "CubeMapToSpherical", source, ref destinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            RenderTextureCubeToSphericalTexture2D(gd, _textureCubeBuildEffect, "CubeMapToSpherical", source, ref destinationMap, generateMips, pixelformat, sizeSquarePerFace);
             return destinationMap;
         }
 
@@ -61,7 +61,7 @@ namespace Microsoft.Xna.Framework
             Texture2D[] destinationMap = new Texture2D[6];
             //for (int i = 0; i < 6; i++)
             //    destinationMap[i] = new Texture2D(gd, sizeSquarePerFace, sizeSquarePerFace, generateMips, pixelformat);
-            RenderTextureCubeToTexture2DArray(gd, _textureCubeBuildEffect, "CubeMapToTexture", source, ref destinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            RenderTextureCubeToTexture2DArray(gd, _textureCubeBuildEffect, "CubeMapToTexture", source, ref destinationMap, generateMips, pixelformat, sizeSquarePerFace);
             return destinationMap;
         }
 
@@ -71,7 +71,7 @@ namespace Microsoft.Xna.Framework
             if (useHdrFormat)
                 pixelformat = SurfaceFormat.Vector4;
             Texture2D destinationMap = new Texture2D(gd, sizeSquarePerFace, sizeSquarePerFace / 2, generateMips, pixelformat);
-            RenderTexture2DArrayToSphericalTexture2D(gd, _textureCubeBuildEffect, "TextureFacesToSpherical", source, ref destinationMap, generateMips, useHdrFormat, sizeSquarePerFace);
+            RenderTexture2DArrayToSphericalTexture2D(gd, _textureCubeBuildEffect, "TextureFacesToSpherical", source, ref destinationMap, generateMips, pixelformat, sizeSquarePerFace);
             return destinationMap;
         }
 
@@ -81,7 +81,7 @@ namespace Microsoft.Xna.Framework
             if (useHdrFormat)
                 pixelformat = SurfaceFormat.Vector4;
             TextureCube destination = new TextureCube(gd, sizeSquarePerFace, generateMips, pixelformat);
-            RenderTexture2DArrayToTextureCube(gd, _textureCubeBuildEffect, "TextureFacesToCubeFaces", source, ref destination, generateMips, useHdrFormat, sizeSquarePerFace);
+            RenderTexture2DArrayToTextureCube(gd, _textureCubeBuildEffect, "TextureFacesToCubeFaces", source, ref destination, generateMips, pixelformat, sizeSquarePerFace);
             return destination;
         }
 
@@ -95,12 +95,9 @@ namespace Microsoft.Xna.Framework
         /// Renders the hdr texture to a TextureCube.
         /// The ref is used to pass the ref variable directly thru here, its not a ref copy i guess.
         /// </summary>
-        private static void RenderSphericalTexture2DToTextureCube(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D sourceTextureSpherical, ref TextureCube textureCubeDestinationMap, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        private static void RenderSphericalTexture2DToTextureCube(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D sourceTextureSpherical, ref TextureCube textureCubeDestinationMap, bool generateMips, SurfaceFormat pixelformat, int sizeSquarePerFace)
         {
             gd.RasterizerState = RasterizerState.CullNone;
-            var pixelformat = SurfaceFormat.Color;
-            if (useHdrFormat)
-                pixelformat = SurfaceFormat.Vector4;
             var renderTargetCube = new RenderTargetCube(gd, sizeSquarePerFace, generateMips, pixelformat, DepthFormat.None);
             _hdrEffect.CurrentTechnique = _hdrEffect.Techniques[Technique];
             _hdrEffect.Parameters["Texture"].SetValue(sourceTextureSpherical);
@@ -141,12 +138,9 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Renders the hdr spherical map to a array of 6 texture2D faces using the designated effect and technique.
         /// </summary>
-        private static void RenderSphericalTexture2DToTexture2DArray(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D source, ref Texture2D[] textureFaceArray, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        private static void RenderSphericalTexture2DToTexture2DArray(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D source, ref Texture2D[] textureFaceArray, bool generateMips, SurfaceFormat pixelformat, int sizeSquarePerFace)
         {
             gd.RasterizerState = RasterizerState.CullNone;
-            var pixelformat = SurfaceFormat.Color;
-            if (useHdrFormat)
-                pixelformat = SurfaceFormat.Vector4;
             textureFaceArray = new Texture2D[6];
             _hdrEffect.CurrentTechnique = _hdrEffect.Techniques[Technique];
             _hdrEffect.Parameters["Texture"].SetValue(source);
@@ -168,12 +162,9 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Renders the hdr TextureCube to a array of 6 texture2D faces using the designated effect and technique.
         /// </summary>
-        private static void RenderTextureCubeToSphericalTexture2D(GraphicsDevice gd, Effect _hdrEffect, string Technique, TextureCube sourceTextureCube, ref Texture2D textureSpherical, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        private static void RenderTextureCubeToSphericalTexture2D(GraphicsDevice gd, Effect _hdrEffect, string Technique, TextureCube sourceTextureCube, ref Texture2D textureSpherical, bool generateMips, SurfaceFormat pixelformat, int sizeSquarePerFace)
         {
             gd.RasterizerState = RasterizerState.CullNone;
-            var pixelformat = SurfaceFormat.Color;
-            if (useHdrFormat)
-                pixelformat = SurfaceFormat.Vector4;
             _hdrEffect.CurrentTechnique = _hdrEffect.Techniques[Technique];
             _hdrEffect.Parameters["CubeMap"].SetValue(sourceTextureCube);
             for (int i = 0; i < 6; i++)
@@ -193,12 +184,9 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Renders the hdr TextureCube to a array of 6 texture2D faces using the designated effect and technique.
         /// </summary>
-        private static void RenderTextureCubeToTexture2DArray(GraphicsDevice gd, Effect _hdrEffect, string Technique, TextureCube sourceTextureCube, ref Texture2D[] textureFaceArray, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        private static void RenderTextureCubeToTexture2DArray(GraphicsDevice gd, Effect _hdrEffect, string Technique, TextureCube sourceTextureCube, ref Texture2D[] textureFaceArray, bool generateMips, SurfaceFormat pixelformat, int sizeSquarePerFace)
         {
             gd.RasterizerState = RasterizerState.CullNone;
-            var pixelformat = SurfaceFormat.Color;
-            if (useHdrFormat)
-                pixelformat = SurfaceFormat.Vector4;
             textureFaceArray = new Texture2D[6];
             _hdrEffect.CurrentTechnique = _hdrEffect.Techniques[Technique];
             _hdrEffect.Parameters["CubeMap"].SetValue(sourceTextureCube);
@@ -220,12 +208,9 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Renders the  array of 6 texture2D faces to a TextureCube using the designated effect and technique.
         /// </summary>
-        private static void RenderTexture2DArrayToTextureCube(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D[] sourceTextureFaceArray, ref TextureCube textureCubeDestinationMap, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        private static void RenderTexture2DArrayToTextureCube(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D[] sourceTextureFaceArray, ref TextureCube textureCubeDestinationMap, bool generateMips, SurfaceFormat pixelformat, int sizeSquarePerFace)
         {
             gd.RasterizerState = RasterizerState.CullNone;
-            var pixelformat = SurfaceFormat.Color;
-            if (useHdrFormat)
-                pixelformat = SurfaceFormat.Vector4;
             var renderTargetCube = new RenderTargetCube(gd, sizeSquarePerFace, generateMips, pixelformat, DepthFormat.None);
             _hdrEffect.CurrentTechnique = _hdrEffect.Techniques[Technique];
             for (int i = 0; i < 6; i++)
@@ -263,12 +248,9 @@ namespace Microsoft.Xna.Framework
             gd.SetRenderTarget(null);
         }
 
-        private static void RenderTexture2DArrayToSphericalTexture2D(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D[] sourceTextureFaceArray, ref Texture2D textureSpherical, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        private static void RenderTexture2DArrayToSphericalTexture2D(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D[] sourceTextureFaceArray, ref Texture2D textureSpherical, bool generateMips, SurfaceFormat pixelformat, int sizeSquarePerFace)
         {
             gd.RasterizerState = RasterizerState.CullNone;
-            var pixelformat = SurfaceFormat.Color;
-            if (useHdrFormat)
-                pixelformat = SurfaceFormat.Vector4;
             _hdrEffect.CurrentTechnique = _hdrEffect.Techniques[Technique];
             var renderTarget2D = new RenderTarget2D(gd, sizeSquarePerFace, sizeSquarePerFace / 2, generateMips, pixelformat, DepthFormat.None);
             gd.SetRenderTarget(renderTarget2D);
@@ -289,12 +271,9 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Renders the hdr TextureCube to another TextureCube using the designated effect and technique.
         /// </summary>
-        private static void RenderTextureCubeToTextureCube(GraphicsDevice gd, Effect _hdrEffect, string Technique, TextureCube sourceTextureCube, ref TextureCube textureCubeDestinationMap, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        private static void RenderTextureCubeToTextureCube(GraphicsDevice gd, Effect _hdrEffect, string Technique, TextureCube sourceTextureCube, ref TextureCube textureCubeDestinationMap, bool generateMips, SurfaceFormat pixelformat, int sizeSquarePerFace)
         {
             gd.RasterizerState = RasterizerState.CullNone;
-            var pixelformat = SurfaceFormat.Color;
-            if (useHdrFormat)
-                pixelformat = SurfaceFormat.Vector4;
             var renderTargetCube = new RenderTargetCube(gd, sizeSquarePerFace, generateMips, pixelformat, DepthFormat.None);
             _hdrEffect.CurrentTechnique = _hdrEffect.Techniques[Technique];
             _hdrEffect.Parameters["CubeMap"].SetValue(sourceTextureCube);

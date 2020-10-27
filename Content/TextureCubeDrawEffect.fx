@@ -69,7 +69,7 @@ PNTVertexShaderOutput RenderCubeMapVS(in PNTVertexShaderInput input)
     float4 pos = mul(input.Position, World);
     float4 norm = mul(input.Normal, World);
     output.Position = mul(pos, vp);
-    output.Position3D = mul(pos.xyz, View);
+    output.Position3D = pos.xyz;
     output.Normal3D = norm.xyz;
     output.TextureCoordinate = input.TextureCoordinate;
     return output;
@@ -116,7 +116,7 @@ PNTVertexShaderOutput VertexShaderQuadDraw(PNTVertexShaderInput input)
     float4 pos = mul(input.Position, World);
     float4 norm = mul(input.Normal, World);
     output.Position = mul(pos, vp);
-    output.Position3D = mul(pos.xyz, View);
+    output.Position3D = pos.xyz;
     output.Normal3D = norm.xyz;
     output.TextureCoordinate = input.TextureCoordinate;
     return output;

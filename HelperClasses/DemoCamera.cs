@@ -17,10 +17,12 @@ namespace Microsoft.Xna.Framework
         Vector3 _forward = Vector3.Zero;
         Vector3 _lastForward = Vector3.Zero;
         Vector3 _camUp = Vector3.Zero;
-        Matrix _camera = Matrix.Identity;
+        Matrix _cameraWorld = Matrix.Identity;
         float _near = 1f;
         float _far = 1000f;
         float _fieldOfView = 1.0f;
+        bool _perspectiveStyle = false;
+        bool _spriteBatchStyle = false;
         float inv = 1f;
         Matrix _projection = Matrix.Identity;
         float _durationElapsed = 0f;
@@ -30,12 +32,14 @@ namespace Microsoft.Xna.Framework
         MyImbalancedSpline wayPointCurvature;
 
         public Matrix Projection { get { return _projection; } set { _projection = value; } }
-        public Matrix View { get { return Matrix.Invert(_camera); } }
-        public Matrix World { get { return _camera; } }
-        public Vector3 Position { get { return _camera.Translation; } }
-        public Vector3 Forward { get { return _camera.Forward; } }
-        public Vector3 Up { get { return _camera.Up; } set { _camera.Up = value; _camUp = value; } }
-        public Vector3 Right { get { return _camera.Right; } }
+        public Matrix View { get { return Matrix.Invert(_cameraWorld); } }
+        public Matrix World { get { return _cameraWorld; } }
+        public Vector3 Position { get { return _cameraWorld.Translation; } }
+        public Vector3 Forward { get { return _cameraWorld.Forward; } }
+        public Vector3 Up { get { return _cameraWorld.Up; } set { _cameraWorld.Up = value; _camUp = value; } }
+        public Vector3 Right { get { return _cameraWorld.Right; } }
+        public float Near { get { return _near; } }
+        public float Far { get { return _far; } }
         public float WayPointCycleDurationInTotalSeconds { get { return _durationInSeconds; } set { _durationInSeconds = value; } }
         public float LookAtSpeedPerSecond { get; set; } = 1f;
         public float MovementSpeedPerSecond { get; set; } = 1f;
@@ -48,12 +52,12 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// This is a cinematic styled fixed camera it uses way points to traverse thru the world.
         /// </summary>
-        public DemoCamera(GraphicsDevice device, SpriteBatch spriteBatch, Texture2D dot, Vector3 pos, Vector3 target, Vector3 up, float nearClipPlane, float farClipPlane, float fieldOfView, bool perspective, bool inverseOthographicProjection)
+        public DemoCamera(GraphicsDevice device, SpriteBatch spriteBatch, Texture2D dot, Vector3 pos, Vector3 target, Vector3 up, float nearClipPlane, float farClipPlane, float fieldOfView, bool perspective, bool spriteBatchStyled, bool inverseOthographicProjection)
         {
             DrawHelpers.Initialize(device, spriteBatch, dot);
             wayPointCurvature = new MyImbalancedSpline();
             TransformCamera(pos, target, up);
-            SetProjection(device, nearClipPlane, farClipPlane, fieldOfView, perspective, inverseOthographicProjection);
+            SetProjection(device, nearClipPlane, farClipPlane, fieldOfView, perspective, spriteBatchStyled, inverseOthographicProjection);
         }
 
         /// <summary>
@@ -104,7 +108,7 @@ namespace Microsoft.Xna.Framework
                 RollCounterClockwise(MovementSpeedPerSecond * elapsed);
 
             // transform
-            TransformCamera(_camera.Translation, _camera.Forward + _camera.Translation, _camera.Up);
+            TransformCamera(_cameraWorld.Translation, _cameraWorld.Forward + _cameraWorld.Translation, _cameraWorld.Up);
         }
 
         public void TransformCamera(Vector3 pos, Vector3 target, Vector3 up)
@@ -112,7 +116,7 @@ namespace Microsoft.Xna.Framework
             _targetLookAtPos = target;
             _camPos = pos;
             _camUp = up;
-            _forward = _targetLookAtPos  - _camPos;
+            _forward = _targetLookAtPos - _camPos;
 
             if (_forward.X == 0 && _forward.Y == 0 && _forward.Z == 0)
                 _forward = _lastForward;
@@ -124,49 +128,114 @@ namespace Microsoft.Xna.Framework
 
             // ...
 
-            _camera = Matrix.CreateWorld(_camPos, _forward, _camUp);
+            _cameraWorld = Matrix.CreateWorld(_camPos, _forward, _camUp);
         }
 
-        public void SetProjection(GraphicsDevice device, float nearClipPlane, float farClipPlane, float fieldOfView, bool perspective, bool inverseOrthoGraphicProjection)
+        public void SetProjection(GraphicsDevice device, float nearClipPlane, float farClipPlane, float fieldOfView, bool perspective, bool spriteBatchStyled, bool inverseOrthoGraphicProjection)
         {
             _near = nearClipPlane;
             _far = farClipPlane;
             _fieldOfView = fieldOfView;
+            _perspectiveStyle = perspective;
+            _spriteBatchStyle = spriteBatchStyled;
 
             // Allows a change to a spritebatch style orthagraphic or inverse styled persepective, e.g. a viewer imagining a forward z positive depth going into the screen.
             inv = 1f;
             if (inverseOrthoGraphicProjection)
                 inv *= -1f;
 
-            if (perspective)
-                _projection = Matrix.CreatePerspectiveFieldOfView(fieldOfView, device.Viewport.AspectRatio, _near, _far);
+            UpdateProjectionViaPresets(device);
+        }
+
+        public void UpdateProjectionViaPresets(GraphicsDevice device)
+        {
+            if (_perspectiveStyle)
+            {
+                if (_spriteBatchStyle)
+                {
+                    CreatePerspectiveViewSpriteBatchAligned(device, _camPos, _fieldOfView, _near, _far, out _cameraWorld, out _projection);
+                    TransformCamera(_cameraWorld.Translation, _cameraWorld.Forward + _cameraWorld.Translation, _cameraWorld.Up); // take care _camPos is not yet set.
+                }
+                else
+                {
+                    _projection = Matrix.CreatePerspectiveFieldOfView(_fieldOfView, device.Viewport.AspectRatio, _near, _far);
+                }
+            }
             else
-                _projection = Matrix.CreateOrthographicOffCenter(0, device.Viewport.Width, device.Viewport.Height, 0, _near, inv * _far);
+            {
+                if (_spriteBatchStyle)
+                {
+                    CreateOrthographicViewSpriteBatchAligned(device, _camPos, false, out _cameraWorld, out _projection);
+                    TransformCamera(_cameraWorld.Translation, _cameraWorld.Forward + _cameraWorld.Translation, _cameraWorld.Up); // take care _camPos is not yet set.
+                }
+                else
+                {
+                    _projection = Matrix.CreateOrthographicOffCenter(0, device.Viewport.Width, device.Viewport.Height, 0, _near, inv * _far);
+                }
+            }
         }
 
-        public Matrix ViewMatrixForPerspectiveSpriteBatch(float width, float height, float _fov, Vector3 forward, Vector3 up)
+        public void CreatePerspectiveViewSpriteBatchAligned(GraphicsDevice device, Vector3 scollPositionOffset, float fieldOfView, float near, float far, out Matrix cameraWorld, out Matrix projection)
         {
-            var pos = new Vector3(width / 2, height / 2, -((1f / (float)Math.Tan(_fov / 2)) * (height / 2)));
-            return Matrix.Invert(Matrix.CreateWorld(pos, forward + pos, up));
-        }
-        public Matrix CameraMatrixForPerspectiveSpriteBatch(float width, float height, float _fov, Vector3 forward, Vector3 up)
-        {
-            var pos = new Vector3(width / 2, height / 2, -((1f / (float)Math.Tan(_fov / 2)) * (height / 2)));
-            return Matrix.CreateWorld(pos, forward + pos, up);
-        }
-
-        public Matrix GetWorldMatrixForPerspectiveProjectionAlignedToSpritebatch(GraphicsDevice device, Vector3 up)
-        {
-            var dist = -((1f / (float)Math.Tan(_fieldOfView / 2)) * (device.Viewport.Height / 2));
-            var pos = new Vector3(device.Viewport.Width / 2, device.Viewport.Height / 2, dist);
+            var dist = -((1f / (float)Math.Tan(fieldOfView / 2)) * (device.Viewport.Height / 2));
+            var pos = new Vector3(device.Viewport.Width / 2, device.Viewport.Height / 2, dist) + scollPositionOffset;
             var target = new Vector3(0, 0, 1) + pos;
-            return Matrix.CreateWorld(_camPos, _forward, up);
+            cameraWorld = Matrix.CreateWorld(pos, target - pos, Vector3.Down);
+            projection = CreateInfinitePerspectiveFieldOfViewRHLH(fieldOfView, device.Viewport.AspectRatio, near, far, true);
         }
 
-        public Vector3 CameraWorldPositionVectorForPerspectiveSpriteBatch(float width, float height, float _fov)
+        public void CreateOrthographicViewSpriteBatchAligned(GraphicsDevice device, Vector3 scollPositionOffset, bool inverseOrthoDirection, out Matrix cameraWorld, out Matrix projection)
         {
-            var pos = new Vector3(width / 2, height / 2, -((1f / (float)Math.Tan(_fov / 2)) * (height / 2)));
-            return pos;
+            float forwardDepthDirection = 1f;
+            if (inverseOrthoDirection)
+                forwardDepthDirection = -1f;
+            cameraWorld = Matrix.CreateWorld(scollPositionOffset, new Vector3(0, 0, 1), Vector3.Down);
+            projection = Matrix.CreateOrthographicOffCenter(0, device.Viewport.Width, -device.Viewport.Height, 0, forwardDepthDirection * 0, forwardDepthDirection * 1f);
+        }
+
+        public float GetRequisitePerspectiveSpriteBatchAlignmentZdistance(GraphicsDevice device, float fieldOfView)
+        {
+            var dist = -((1f / (float)Math.Tan(fieldOfView / 2)) * (device.Viewport.Height / 2));
+            //var pos = new Vector3(device.Viewport.Width / 2, device.Viewport.Height / 2, dist);
+            return dist;
+        }
+
+        public static Matrix CreateInfinitePerspectiveFieldOfViewRHLH(float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance, bool isRightHanded)
+        {
+            /* RH
+             m11= xscale           m12= 0                 m13= 0                  m14=  0
+             m21= 0                  m22= yscale          m23= 0                  m24= 0
+             m31= 0                  0                          m33= f/(f-n) ~        m34= -1 ~
+             m41= 0                  m42= 0                m43= n*f/(n-f) ~     m44= 0  
+             where:
+             yScale = cot(fovY/2)
+             xScale = yScale / aspect ratio
+           */
+            if ((fieldOfView <= 0f) || (fieldOfView >= 3.141593f)) { throw new ArgumentException("fieldOfView <= 0 or >= PI"); }
+
+            Matrix result = new Matrix();
+            float yscale = 1f / ((float)Math.Tan((double)(fieldOfView * 0.5f)));
+            float xscale = yscale / aspectRatio;
+            var negFarRange = float.IsPositiveInfinity(farPlaneDistance) ? -1.0f : farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
+            result.M11 = xscale;
+            result.M12 = result.M13 = result.M14 = 0;
+            result.M22 = yscale;
+            result.M21 = result.M23 = result.M24 = 0;
+            result.M31 = result.M32 = 0f;
+            if (isRightHanded)
+            {
+                result.M33 = negFarRange;
+                result.M34 = -1;
+                result.M43 = nearPlaneDistance * negFarRange;
+            }
+            else
+            {
+                result.M33 = negFarRange;
+                result.M34 = 1;
+                result.M43 = -nearPlaneDistance * negFarRange;
+            }
+            result.M41 = result.M42 = result.M44 = 0;
+            return result;
         }
 
         public void CurveThruWayPoints(Vector3 targetPosition, Vector3[] waypoints, GameTime gameTime)
@@ -217,8 +286,8 @@ namespace Microsoft.Xna.Framework
                 Vector2 offset2d = Get2dVectorAxisElements(offset, PlaneOption);
                 // current 2d camera position and forward on the orthographic xy plane.
                 var camTargetPos = Get2dVectorAxisElements(_targetLookAtPos, PlaneOption);
-                var camPosition = Get3dTwistedVectorAxisElements(_camera.Translation, PlaneOption);
-                var camForward = Get3dTwistedVectorAxisElements(_camera.Forward, PlaneOption);
+                var camPosition = Get3dTwistedVectorAxisElements(_cameraWorld.Translation, PlaneOption);
+                var camForward = Get3dTwistedVectorAxisElements(_cameraWorld.Forward, PlaneOption);
                 //
                 var drawnCam2dHeightAdjustment = new Vector2(0, camPosition.Z *-.5f) * scale;
                 var drawnCamTargetPos = camTargetPos * scale + offset2d;
@@ -303,100 +372,100 @@ namespace Microsoft.Xna.Framework
 
         public void MoveForwardLocally(float amount)
         {
-            _camera.Translation += _camera.Forward * amount;
+            _cameraWorld.Translation += _cameraWorld.Forward * amount;
         }
         public void MoveBackLocally(float amount)
         {
-            _camera.Translation += _camera.Backward * amount;
+            _cameraWorld.Translation += _cameraWorld.Backward * amount;
         }
         public void MoveLeftLocally(float amount)
         {
-            _camera.Translation += _camera.Left * amount;
+            _cameraWorld.Translation += _cameraWorld.Left * amount;
         }
         public void MoveRightLocally(float amount)
         {
-            _camera.Translation += _camera.Right * amount;
+            _cameraWorld.Translation += _cameraWorld.Right * amount;
         }
         public void MoveUpLocally(float amount)
         {
-            _camera.Translation += _camera.Up * amount;
+            _cameraWorld.Translation += _cameraWorld.Up * amount;
         }
         public void MoveDownLocally(float amount)
         {
-            _camera.Translation += _camera.Down * amount;
+            _cameraWorld.Translation += _cameraWorld.Down * amount;
         }
 
         public void LookLeftLocally(float amountInRadians)
         {
-            var m = Matrix.CreateFromAxisAngle(_camera.Up, amountInRadians);
-            var t = _camera.Translation;
-            _camera *= m;
-            _camera.Translation = t;
+            var m = Matrix.CreateFromAxisAngle(_cameraWorld.Up, amountInRadians);
+            var t = _cameraWorld.Translation;
+            _cameraWorld *= m;
+            _cameraWorld.Translation = t;
         }
         public void LookRightLocally(float amountInRadians)
         {
-            var m = Matrix.CreateFromAxisAngle(_camera.Up, -amountInRadians);
-            var t = _camera.Translation;
-            _camera *= m;
-            _camera.Translation = t;
+            var m = Matrix.CreateFromAxisAngle(_cameraWorld.Up, -amountInRadians);
+            var t = _cameraWorld.Translation;
+            _cameraWorld *= m;
+            _cameraWorld.Translation = t;
         }
         public void LookUpLocally(float amountInRadians)
         {
-            var m = Matrix.CreateFromAxisAngle(_camera.Right, amountInRadians);
-            var t = _camera.Translation;
-            _camera *= m;
-            _camera.Translation = t;
+            var m = Matrix.CreateFromAxisAngle(_cameraWorld.Right, amountInRadians);
+            var t = _cameraWorld.Translation;
+            _cameraWorld *= m;
+            _cameraWorld.Translation = t;
         }
         public void LookDownLocally(float amountInRadians)
         {
-            var m = Matrix.CreateFromAxisAngle(_camera.Right, -amountInRadians);
-            var t = _camera.Translation;
-            _camera *= m;
-            _camera.Translation = t;
+            var m = Matrix.CreateFromAxisAngle(_cameraWorld.Right, -amountInRadians);
+            var t = _cameraWorld.Translation;
+            _cameraWorld *= m;
+            _cameraWorld.Translation = t;
         }
 
         public void RollClockwise(float amountInRadians)
         {
-            var m = Matrix.CreateFromAxisAngle(_camera.Forward, amountInRadians);
-            var t = _camera.Translation;
-            _camera *= m;
-            _camera.Translation = t;
+            var m = Matrix.CreateFromAxisAngle(_cameraWorld.Forward, amountInRadians);
+            var t = _cameraWorld.Translation;
+            _cameraWorld *= m;
+            _cameraWorld.Translation = t;
         }
         public void RollCounterClockwise(float amountInRadians)
         {
-            var m = Matrix.CreateFromAxisAngle(_camera.Forward, -amountInRadians);
-            var t = _camera.Translation;
-            _camera *= m;
-            _camera.Translation = t;
+            var m = Matrix.CreateFromAxisAngle(_cameraWorld.Forward, -amountInRadians);
+            var t = _cameraWorld.Translation;
+            _cameraWorld *= m;
+            _cameraWorld.Translation = t;
         }
 
         public void LookLeftSystem(float amountInRadians)
         {
             var m = Matrix.CreateRotationY(amountInRadians);
-            var t = _camera.Translation;
-            _camera *= m;
-            _camera.Translation = t;
+            var t = _cameraWorld.Translation;
+            _cameraWorld *= m;
+            _cameraWorld.Translation = t;
         }
         public void LookRightSystem(float amountInRadians)
         {
             var m = Matrix.CreateRotationY(-amountInRadians);
-            var t = _camera.Translation;
-            _camera *= m;
-            _camera.Translation = t;
+            var t = _cameraWorld.Translation;
+            _cameraWorld *= m;
+            _cameraWorld.Translation = t;
         }
         public void LookUpSystem(float amountInRadians)
         {
             var m = Matrix.CreateRotationX(amountInRadians);
-            var t = _camera.Translation;
-            _camera *= m;
-            _camera.Translation = t;
+            var t = _cameraWorld.Translation;
+            _cameraWorld *= m;
+            _cameraWorld.Translation = t;
         }
         public void LookDownSystem(float amountInRadians)
         {
             var m = Matrix.CreateRotationX(-amountInRadians);
-            var t = _camera.Translation;
-            _camera *= m;
-            _camera.Translation = t;
+            var t = _cameraWorld.Translation;
+            _cameraWorld *= m;
+            _cameraWorld.Translation = t;
         }
     }
 

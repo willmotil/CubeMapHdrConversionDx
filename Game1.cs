@@ -45,7 +45,7 @@ namespace CubeMapHdrConversionDx
 
         private string[] _currentCubeMapShown = new string[] { "_textureCubeEnviroment", "_textureCubeIblDiffuseIllumination", "_generatedTextureCubeFromFaceArray" };
 
-        private PrimitiveCube skyCube = new PrimitiveCube(500, false, false, true);
+        private PrimitiveCube skyCube;
         private PrimitiveCube[] cubes = new PrimitiveCube[5];
 
         private float _mipLevelTestValue = 0;
@@ -55,14 +55,15 @@ namespace CubeMapHdrConversionDx
         private bool _wireframe = false;
         private RasterizerState rs_wireframe = new RasterizerState() { FillMode = FillMode.WireFrame };
 
-        private DemoCamera _camera;
+        //private DemoCamera _cameraSpritebatch;
+        private DemoCamera _cameraCinematic;
         private Vector3[] _cameraWayPoints = new Vector3[] { new Vector3(-50, 15, 5), new Vector3(20, 0, -50), new Vector3(50, 0, 5), new Vector3(20, -15, 50) };
         private bool _useDemoWaypoints = false;
         private Vector3 _targetLookAt = new Vector3(0, 0, 0);
 
         private Matrix _projectionBuildSkyCubeMatrix;
-        private static Vector3 sbpPos;
-        private Matrix sbpWorld;
+        //private static Vector3 sbpPos;
+        //private Matrix sbpWorld;
 
         #endregion
 
@@ -88,6 +89,11 @@ namespace CubeMapHdrConversionDx
             this.Window.AllowUserResizing = true;
             this.Window.AllowAltF4 = true;
             this.Window.ClientSizeChanged += ClientResize;
+
+            _graphics.PreferredBackBufferWidth = 1200;
+            _graphics.PreferredBackBufferHeight = 800;
+            _graphics.ApplyChanges();
+
             base.Initialize();
         }
 
@@ -102,25 +108,39 @@ namespace CubeMapHdrConversionDx
             _sphericalTexture2DEnviromentalMap = Content.Load<Texture2D>("hdr_royal_esplanade_2k");  // "hdr_colorful_studio_2k" "schadowplatz_2k"
             _initialLoadedFormat = _sphericalTexture2DEnviromentalMap.Format;
 
-            LoadPrimitives();
-            CreateIblCubeMaps();
-            SetupCamera();
-            DetermineRectanglePositionsAddToQuads();
+            SetupTheCameras();
+            CreateRectanglePositionsAndAddThemToQuads();
+            CreatePrimitiveSceneCubes();
+            CreateSphericalArraysAndCubeMapTextures();
         }
 
         public void ClientResize(object sender, EventArgs e)
         {
-            _projectionBuildSkyCubeMatrix = Matrix.CreatePerspectiveFieldOfView(90 * (float)((3.14159265358f) / 180f), GraphicsDevice.Viewport.Width / GraphicsDevice.Viewport.Height, 0.01f, 1000f);
-            sbpPos = _camera.CameraWorldPositionVectorForPerspectiveSpriteBatch(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 1f);
+            SetupTheCameras();
         }
 
-        public void LoadPrimitives()
+        public void SetupTheCameras()
         {
-            for (int i = 0; i < 5; i++)
-                cubes[i] = new PrimitiveCube(1, true, false, true);
+            // a 90 degree field of view is needed for the projection matrix.
+            var f90 = 90.0f * (3.14159265358f / 180f);
+            //_projectionBuildSkyCubeMatrix = Matrix.CreatePerspectiveFieldOfView(f90, GraphicsDevice.Viewport.Width / GraphicsDevice.Viewport.Height, 0.01f, 1000f);
+
+            _cameraCinematic = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(0, 0, 0), new Vector3(0, 0, 1), Vector3.Up, 0.01f, 10000f, f90, true, false, false);
+            //_cameraCinematic.TransformCamera(_cameraCinematic.World.Translation, _targetLookAt, _cameraCinematic.World.Up);
+            _cameraCinematic.Up = Vector3.Up;
+            _cameraCinematic.WayPointCycleDurationInTotalSeconds = 30f;
+            _cameraCinematic.MovementSpeedPerSecond = 8f;
+            _cameraCinematic.SetWayPoints(_cameraWayPoints, true, 30);
         }
 
-        public void CreateIblCubeMaps()
+        public void CreatePrimitiveSceneCubes()
+        {
+            skyCube = new PrimitiveCube(1000, true, false, true);
+            for (int i = 0; i < 5; i++)
+                cubes[i] = new PrimitiveCube(1, false, false, true);
+        }
+
+        public void CreateSphericalArraysAndCubeMapTextures()
         {
             Console.WriteLine($"\n Rendered to scene.");
             if (_sphericalTexture2DEnviromentalMap != null)
@@ -153,31 +173,32 @@ namespace CubeMapHdrConversionDx
             }
         }
 
-        //public void SetupCamera()
-        //{
-        //    // a 90 degree field of view is needed for the projection matrix.
-        //    _projectionBuildSkyCubeMatrix = Matrix.CreatePerspectiveFieldOfView(90.0f * (3.14159265358f / 180f), GraphicsDevice.Viewport.Width / GraphicsDevice.Viewport.Height, 0.01f, 1000f);
-        //    _camera = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(2, 2, 10), new Vector3(0, 0, 0), Vector3.UnitY, 0.1f, 10000f, 1f, true, false);
-        //    _camera.TransformCamera(_camera.World.Translation, _targetLookAt, _camera.World.Up);
-        //    _camera.Up = Vector3.Up;
-        //    _camera.WayPointCycleDurationInTotalSeconds = 25f;
-        //    _camera.MovementSpeedPerSecond = 8f;
-        //    _camera.SetWayPoints(_cameraWayPoints, true, 30);
-        //}
-
-        public void SetupCamera()
+        public void CreateRectanglePositionsAndAddThemToQuads()
         {
-            // a 90 degree field of view is needed for the projection matrix.
-            _projectionBuildSkyCubeMatrix = Matrix.CreatePerspectiveFieldOfView(90.0f * (3.14159265358f / 180f), GraphicsDevice.Viewport.Width / GraphicsDevice.Viewport.Height, 0.01f, 1000f);
-            _camera = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(2, 2, 10), new Vector3(0, 0, 0), Vector3.UnitY, 0.1f, 10000f, 1f, true, false);
-            _camera.TransformCamera(_camera.World.Translation, _targetLookAt, _camera.World.Up);
-            _camera.Up = Vector3.Up;
-            _camera.WayPointCycleDurationInTotalSeconds = 25f;
-            _camera.MovementSpeedPerSecond = 8f;
-            _camera.SetWayPoints(_cameraWayPoints, true, 30);
+            int xoffset = 0;
+            r_sphericalTexture2DEnviromentalMap = new Rectangle(xoffset, 0, 200, 100);
+            xoffset += 120;
+            r_face4_Left = new Rectangle(xoffset + 0, 105, 95, 95);
+            r_face0_Forward = new Rectangle(xoffset + 100, 105, 95, 95);
+            r_face5_Right = new Rectangle(xoffset + 200, 105, 95, 95);
+            r_face1_Back = new Rectangle(xoffset + 300, 105, 95, 95);
+            r_face3_Top = new Rectangle(xoffset + 100, 5, 95, 95);
+            r_face2_Bottom = new Rectangle(xoffset + 100, 205, 95, 95);
+            xoffset += 220;
+            r_generatedSphericalTexture2DFromCube = new Rectangle(xoffset, 0, 200, 100);
+            xoffset += 220;
+            r_generatedSphericalTexture2DFromFaceArray = new Rectangle(xoffset, 0, 200, 100);
 
-            sbpPos = _camera.CameraWorldPositionVectorForPerspectiveSpriteBatch(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 1f);
-            sbpWorld = _camera.GetWorldMatrixForPerspectiveProjectionAlignedToSpritebatch(GraphicsDevice, Vector3.Up);
+            float depth = _cameraCinematic.Near + 1f;
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_sphericalTexture2DEnviromentalMap, depth);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face4_Left, depth);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face0_Forward, depth);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face5_Right, depth);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face1_Back, depth);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face3_Top, depth);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face2_Bottom, depth);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_generatedSphericalTexture2DFromCube, depth);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_generatedSphericalTexture2DFromFaceArray, depth);
         }
 
         protected override void Update(GameTime gameTime)
@@ -201,20 +222,19 @@ namespace CubeMapHdrConversionDx
                 _wireframe = !_wireframe;
 
             if (IsPressedWithDelay(Keys.F5, gameTime))
-                _camera.TransformCamera(new Vector3(0, 0, 0), _camera.Forward, Vector3.Up);
+                _cameraCinematic.TransformCamera(new Vector3(0, 0, 0), _cameraCinematic.Forward, Vector3.Up);
 
             if (IsPressedWithDelay(Keys.F6, gameTime))
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                CreateIblCubeMaps();
+                CreateSphericalArraysAndCubeMapTextures();
                 stopwatch.Stop();
                 Console.WriteLine($" Time elapsed: { stopwatch.Elapsed.TotalMilliseconds}ms   {stopwatch.Elapsed.TotalSeconds}sec ");
             }
 
             if (IsPressedWithDelay(Keys.F7, gameTime))
             {
-
                 for (int i = 0; i < 6; i++)
                 {
                     var path = @"C:\Users\will\MainFiles\Output\face" + i.ToString()+@".png";
@@ -228,10 +248,12 @@ namespace CubeMapHdrConversionDx
             if (_whichCubeMapToDraw < 0)
                 _whichCubeMapToDraw = 2;
 
-            _camera.Update(_targetLookAt, _useDemoWaypoints, gameTime);
+            _cameraCinematic.Update(_targetLookAt, _useDemoWaypoints, gameTime);
 
             msg =
-            $" Camera.Forward: \n  { _camera.Forward.X.ToString("N3") } { _camera.Forward.Y.ToString("N3") } { _camera.Forward.Z.ToString("N3") } \n Cullmode \n {GraphicsDevice.RasterizerState.CullMode} \n MipLevelTestValue {_mipLevelTestValue} " +
+            $" Camera.Forward: \n  { _cameraCinematic.Forward.X.ToString("N3") } { _cameraCinematic.Forward.Y.ToString("N3") } { _cameraCinematic.Forward.Z.ToString("N3") }" + 
+            $"  \n Up: \n { _cameraCinematic.Up.X.ToString("N3") } { _cameraCinematic.Up.Y.ToString("N3") } { _cameraCinematic.Up.Z.ToString("N3") } "+
+            $"\n Cullmode \n {GraphicsDevice.RasterizerState.CullMode} \n MipLevelTestValue {_mipLevelTestValue} " +
             $"\n\n KeyBoard Commands: \n F1 F2 - Display CubeMap {_currentCubeMapShown[_whichCubeMapToDraw]} \n F3 _ Change Mip Level \n F4 - Wireframe or Solid \n F5 - Set Camera to Center \n F6 - Rebuild and time EnvIlluminationMap \n SpaceBar - Camera toggle manual or waypoint \n Q thru C + arrow keys - Manual Camera Control"
             ;
 
@@ -262,23 +284,26 @@ namespace CubeMapHdrConversionDx
 
         protected void DrawPrimitives(GameTime gameTime)
         {
-            _drawingEffect.Parameters["View"].SetValue(_camera.View);
+            _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["RenderCubeMap"];
+            _drawingEffect.Parameters["View"].SetValue(_cameraCinematic.View);
             _drawingEffect.Parameters["testValue1"].SetValue((int)_mipLevelTestValue);
 
-            _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["RenderCubeMap"];
+            GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
             DrawPrimitiveSkyCube(gameTime);
 
             DrawPrimitiveSceneCubes(gameTime);
 
-            //PrimitiveDrawLoadedAndGeneratedTextures();
+            PrimitiveDrawLoadedAndGeneratedTextures();
         }
+
+        #region draw primitive scene camera geometry.
 
         private void DrawPrimitiveSkyCube(GameTime gameTime)
         {
-            _drawingEffect.Parameters["Projection"].SetValue(_projectionBuildSkyCubeMatrix);
+            _drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
             _drawingEffect.Parameters["CameraPosition"].SetValue(Vector3.Zero); // _camera.Position
-            _drawingEffect.Parameters["World"].SetValue(Matrix.CreateWorld(Vector3.Zero, _camera.Forward, _camera.Up)); //_camera.World
+            _drawingEffect.Parameters["World"].SetValue(Matrix.CreateWorld(Vector3.Zero, _cameraCinematic.Forward, _cameraCinematic.Up)); 
 
             if (_whichCubeMapToDraw == 0 && _textureCubeEnviroment != null)
                 skyCube.DrawPrimitiveCube(GraphicsDevice, _drawingEffect, _textureCubeEnviroment);
@@ -290,8 +315,8 @@ namespace CubeMapHdrConversionDx
 
         private void DrawPrimitiveSceneCubes(GameTime gameTime)
         {
-            _drawingEffect.Parameters["Projection"].SetValue(_camera.Projection);
-            _drawingEffect.Parameters["CameraPosition"].SetValue(_camera.Position);
+            _drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
+            _drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position);
 
             int i = 0;
             if (_textureCubeEnviroment != null)
@@ -312,17 +337,90 @@ namespace CubeMapHdrConversionDx
                 cubes[1].DrawPrimitiveCube(GraphicsDevice, _drawingEffect, _generatedTextureCubeFromFaceArray);
                 i++;
             }
-
         }
 
+        #endregion
+
+        #region draw primitive 2d map output.
+
+        public void PrimitiveDrawLoadedAndGeneratedTextures()
+        {
+            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+
+            _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["QuadDraw"];
+            //_drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
+            _drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
+            //_drawingEffect.Parameters["View"].SetValue(_cameraCinematic.View);
+            //_drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position); // _camera.Position // Vector3.Zero
+
+            //var m = _cameraCinematic.View;
+            //m.Translation = new Vector3(0, 0, 0);
+            //m.Forward = new Vector3(0, 0, 1);
+            //m.Right = Vector3.Cross(m.Up, m.Forward);
+            //m.Up = Vector3.Cross(m.Right, m.Forward);
+
+            var m = _cameraCinematic.View;
+            m.Right = new Vector3          (1, 0, 0);
+            m.Up = new Vector3             (0, -1, 0);
+            m.Forward = new Vector3      (0, 0, 1);
+            m.Translation = new Vector3 (-1f, +1f, 0);
+
+            _drawingEffect.Parameters["View"].SetValue(m);
+            _drawingEffect.Parameters["CameraPosition"].SetValue(Vector3.Zero); // _camera.Position // Vector3.Zero
+            _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
+
+            int xoffset = 0;
+            Color textColor = Color.White;
+
+            if (_sphericalTexture2DEnviromentalMap != null)
+            {
+                _drawingEffect.Parameters["TextureA"].SetValue(_sphericalTexture2DEnviromentalMap);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 0, 1);
+            }
+
+            xoffset += 120;
+            if (_generatedTextureFaceArray != null)
+            {
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[4]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 1, 1);
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[0]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 2, 1);
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[5]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 3, 1);
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[1]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 4, 1);
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[2]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 5, 1);
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[3]);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 6, 1);
+            }
+
+            xoffset += 220;
+            if (_generatedSphericalTexture2DFromCube != null)
+            {
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedSphericalTexture2DFromCube);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 7, 1);
+            }
+
+            xoffset += 220;
+            if (_generatedSphericalTexture2DFromFaceArray != null)
+            {
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedSphericalTexture2DFromFaceArray);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 8, 1);
+            }
+        }
+
+        #endregion
+
+        #region spritebatch drawing
 
         public void DrawSpriteBatches(GameTime gameTime)
         {
             _spriteBatch.Begin();
 
-            SpriteBatchDrawLoadedAndGeneratedTextures();
+            //SpriteBatchDrawLoadedAndGeneratedTextures();
 
-            _camera.DrawCurveThruWayPointsWithSpriteBatch(1.5f, new Vector3(GraphicsDevice.Viewport.Bounds.Right -100, 1, GraphicsDevice.Viewport.Bounds.Bottom - 100), 1, gameTime);
+            _cameraCinematic.DrawCurveThruWayPointsWithSpriteBatch(1.5f, new Vector3(GraphicsDevice.Viewport.Bounds.Right - 100, 1, GraphicsDevice.Viewport.Bounds.Bottom - 100), 1, gameTime);
 
             _spriteBatch.DrawString(_font, msg, new Vector2(10, 210), Color.Moccasin);
 
@@ -372,88 +470,7 @@ namespace CubeMapHdrConversionDx
         }
 
 
-
-        public void DetermineRectanglePositionsAddToQuads()
-        {
-            int xoffset = 0;
-            r_sphericalTexture2DEnviromentalMap = new Rectangle(xoffset, 0, 200, 100);
-            xoffset += 120;
-            r_face4_Left = new Rectangle(xoffset + 0, 105, 95, 95);
-            r_face0_Forward = new Rectangle(xoffset + 100, 105, 95, 95);
-            r_face5_Right = new Rectangle(xoffset + 200, 105, 95, 95);
-            r_face1_Back = new Rectangle(xoffset + 300, 105, 95, 95);
-            r_face3_Top = new Rectangle(xoffset + 100, 5, 95, 95);
-            r_face2_Bottom = new Rectangle(xoffset + 100, 205, 95, 95);
-            xoffset += 220;
-            r_generatedSphericalTexture2DFromCube = new Rectangle(xoffset, 0, 200, 100);
-            xoffset += 220;
-            r_generatedSphericalTexture2DFromFaceArray = new Rectangle(xoffset, 0, 200, 100);
-
-            float depth = 1;
-            scrQuads.AddVertexRectangleToBuffer(r_sphericalTexture2DEnviromentalMap, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face4_Left, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face0_Forward, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face5_Right, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face1_Back, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face3_Top, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_face2_Bottom, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_generatedSphericalTexture2DFromCube, depth);
-            scrQuads.AddVertexRectangleToBuffer(r_generatedSphericalTexture2DFromFaceArray, depth);
-        }
-        public void PrimitiveDrawLoadedAndGeneratedTextures()
-        {
-            sbpPos = _camera.CameraWorldPositionVectorForPerspectiveSpriteBatch(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 1f);
-            //sbpView = _camera.ViewMatrixForPerspectiveSpriteBatch(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 90 * (float)((3.14159265358f) / 180f), Vector3.Forward,Vector3.Down);
-            sbpWorld = _camera.GetWorldMatrixForPerspectiveProjectionAlignedToSpritebatch(GraphicsDevice, Vector3.Up);
-
-            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-
-            _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["QuadDraw"];
-            _drawingEffect.Parameters["Projection"].SetValue(_projectionBuildSkyCubeMatrix);
-            _drawingEffect.Parameters["View"].SetValue(Matrix.Invert(sbpWorld));
-            _drawingEffect.Parameters["CameraPosition"].SetValue(sbpPos); // _camera.Position // Vector3.Zero
-            _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);   //Matrix.CreateWorld(Vector3.Zero, Vector3.Forward, Vector3.Down)); //_camera.World
-
-            int xoffset = 0;
-            Color textColor = Color.White;
-
-            if (_sphericalTexture2DEnviromentalMap != null)
-            {
-                _drawingEffect.Parameters["TextureA"].SetValue(_sphericalTexture2DEnviromentalMap);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 0, 1);
-            }
-
-            xoffset += 120;
-            if (_generatedTextureFaceArray != null)
-            {
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[4]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 1, 1);
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[0]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 2, 1);
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[5]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 3, 1);
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[1]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 4, 1);
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[2]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 5, 1);
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedTextureFaceArray[3]);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 6, 1);
-            }
-
-            xoffset += 220;
-            if (_generatedSphericalTexture2DFromCube != null)
-            {
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedSphericalTexture2DFromCube);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 7, 1);
-            }
-
-            xoffset += 220;
-            if (_generatedSphericalTexture2DFromFaceArray != null)
-            {
-                _drawingEffect.Parameters["TextureA"].SetValue(_generatedSphericalTexture2DFromFaceArray);
-                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 8, 1);
-            }
-        }
+        #endregion
 
         #region helper functions
 
