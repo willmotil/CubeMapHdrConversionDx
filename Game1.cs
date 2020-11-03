@@ -125,9 +125,11 @@ namespace CubeMapHdrConversionDx
             var f90 = 90.0f * (3.14159265358f / 180f);
             //_projectionBuildSkyCubeMatrix = Matrix.CreatePerspectiveFieldOfView(f90, GraphicsDevice.Viewport.Width / GraphicsDevice.Viewport.Height, 0.01f, 1000f);
 
+            //_cameraCinematic = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(0, 0, 0), new Vector3(0, 0, 1), Vector3.Down, 0.01f, 10000f, f90, false, true, false);
+
             _cameraCinematic = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(0, 0, 0), new Vector3(0, 0, 1), Vector3.Up, 0.01f, 10000f, f90, true, false, false);
-            //_cameraCinematic.TransformCamera(_cameraCinematic.World.Translation, _targetLookAt, _cameraCinematic.World.Up);
-            _cameraCinematic.Up = Vector3.Up;
+            ////_cameraCinematic.TransformCamera(_cameraCinematic.World.Translation, _targetLookAt, _cameraCinematic.World.Up);
+            ////_cameraCinematic.Up = Vector3.Up;
             _cameraCinematic.WayPointCycleDurationInTotalSeconds = 30f;
             _cameraCinematic.MovementSpeedPerSecond = 8f;
             _cameraCinematic.SetWayPoints(_cameraWayPoints, true, 30);
@@ -189,16 +191,19 @@ namespace CubeMapHdrConversionDx
             xoffset += 220;
             r_generatedSphericalTexture2DFromFaceArray = new Rectangle(xoffset, 0, 200, 100);
 
-            float depth = _cameraCinematic.Near + 1f;
-            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_sphericalTexture2DEnviromentalMap, depth);
-            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face4_Left, depth);
-            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face0_Forward, depth);
-            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face5_Right, depth);
-            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face1_Back, depth);
-            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face3_Top, depth);
-            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face2_Bottom, depth);
-            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_generatedSphericalTexture2DFromCube, depth);
-            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_generatedSphericalTexture2DFromFaceArray, depth);
+            float depth = 0;
+            if (_cameraCinematic.IsPerspectiveStyled)
+                depth = 400f;
+
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_sphericalTexture2DEnviromentalMap, depth, _cameraCinematic.IsPerspectiveStyled);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face4_Left, depth, _cameraCinematic.IsPerspectiveStyled);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face0_Forward, depth, _cameraCinematic.IsPerspectiveStyled);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face5_Right, depth, _cameraCinematic.IsPerspectiveStyled);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face1_Back, depth, _cameraCinematic.IsPerspectiveStyled);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face3_Top, depth, _cameraCinematic.IsPerspectiveStyled);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face2_Bottom, depth, _cameraCinematic.IsPerspectiveStyled);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_generatedSphericalTexture2DFromCube, depth, _cameraCinematic.IsPerspectiveStyled);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_generatedSphericalTexture2DFromFaceArray, depth, _cameraCinematic.IsPerspectiveStyled);
         }
 
         protected override void Update(GameTime gameTime)
@@ -251,8 +256,10 @@ namespace CubeMapHdrConversionDx
             _cameraCinematic.Update(_targetLookAt, _useDemoWaypoints, gameTime);
 
             msg =
-            $" Camera.Forward: \n  { _cameraCinematic.Forward.X.ToString("N3") } { _cameraCinematic.Forward.Y.ToString("N3") } { _cameraCinematic.Forward.Z.ToString("N3") }" + 
-            $"  \n Up: \n { _cameraCinematic.Up.X.ToString("N3") } { _cameraCinematic.Up.Y.ToString("N3") } { _cameraCinematic.Up.Z.ToString("N3") } "+
+            $" Camera IsSpriteBatchStyled {_cameraCinematic.IsSpriteBatchStyled}" +
+            $"\n Camera.View.Translation: \n  { _cameraCinematic.View.Translation.X.ToString("N3") } { _cameraCinematic.View.Translation.Y.ToString("N3") } { _cameraCinematic.View.Translation.Z.ToString("N3") }" +
+            $"\n Camera.Forward: \n  { _cameraCinematic.Forward.X.ToString("N3") } { _cameraCinematic.Forward.Y.ToString("N3") } { _cameraCinematic.Forward.Z.ToString("N3") }" + 
+            $"\n Up: \n { _cameraCinematic.Up.X.ToString("N3") } { _cameraCinematic.Up.Y.ToString("N3") } { _cameraCinematic.Up.Z.ToString("N3") } "+
             $"\n Cullmode \n {GraphicsDevice.RasterizerState.CullMode} \n MipLevelTestValue {_mipLevelTestValue} " +
             $"\n\n KeyBoard Commands: \n F1 F2 - Display CubeMap {_currentCubeMapShown[_whichCubeMapToDraw]} \n F3 _ Change Mip Level \n F4 - Wireframe or Solid \n F5 - Set Camera to Center \n F6 - Rebuild and time EnvIlluminationMap \n SpaceBar - Camera toggle manual or waypoint \n Q thru C + arrow keys - Manual Camera Control"
             ;
@@ -288,7 +295,8 @@ namespace CubeMapHdrConversionDx
             _drawingEffect.Parameters["View"].SetValue(_cameraCinematic.View);
             _drawingEffect.Parameters["testValue1"].SetValue((int)_mipLevelTestValue);
 
-            GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
+            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            //GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
             DrawPrimitiveSkyCube(gameTime);
 
@@ -302,8 +310,10 @@ namespace CubeMapHdrConversionDx
         private void DrawPrimitiveSkyCube(GameTime gameTime)
         {
             _drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
-            _drawingEffect.Parameters["CameraPosition"].SetValue(Vector3.Zero); // _camera.Position
-            _drawingEffect.Parameters["World"].SetValue(Matrix.CreateWorld(Vector3.Zero, _cameraCinematic.Forward, _cameraCinematic.Up)); 
+            _drawingEffect.Parameters["View"].SetValue(_cameraCinematic.View);
+            _drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position); // _cameraCinematic.Position Vector3.Zero
+            //_drawingEffect.Parameters["World"].SetValue(Matrix.CreateWorld(Vector3.Zero, _cameraCinematic.Forward, _cameraCinematic.Up));
+            _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
 
             if (_whichCubeMapToDraw == 0 && _textureCubeEnviroment != null)
                 skyCube.DrawPrimitiveCube(GraphicsDevice, _drawingEffect, _textureCubeEnviroment);
@@ -318,25 +328,38 @@ namespace CubeMapHdrConversionDx
             _drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
             _drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position);
 
+            Matrix scaleMatrix = Matrix.Identity;
+            if (_cameraCinematic.IsSpriteBatchStyled)
+                    scaleMatrix = Matrix.CreateScale(1f);
+                else
+                    scaleMatrix = Matrix.CreateScale(10f);
             int i = 0;
             if (_textureCubeEnviroment != null)
             {
-                _drawingEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(new Vector3(i * 2 + 70, i * 2, i * -2.5f + -8)));
+                _drawingEffect.Parameters["World"].SetValue(scaleMatrix * Matrix.CreateTranslation(GetScreenFaceDrawPositions(i, _cameraCinematic.IsSpriteBatchStyled)) );
                 cubes[1].DrawPrimitiveCube(GraphicsDevice, _drawingEffect, _textureCubeEnviroment);
                 i++;
             }
             if (_textureCubeIblDiffuseIllumination != null)
             {
-                _drawingEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(new Vector3(i * 2 + 70, i * 2, i * -2.5f + -8)));
+                _drawingEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(GetScreenFaceDrawPositions(i, _cameraCinematic.IsSpriteBatchStyled)) * scaleMatrix);
                 cubes[1].DrawPrimitiveCube(GraphicsDevice, _drawingEffect, _textureCubeIblDiffuseIllumination);
                 i++;
             }
             if (_generatedTextureCubeFromFaceArray != null)
             {
-                _drawingEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(new Vector3(i * 2 + 70, i * 2, i * -2.5f + -8)));
+                _drawingEffect.Parameters["World"].SetValue(scaleMatrix * Matrix.CreateTranslation(GetScreenFaceDrawPositions(i, _cameraCinematic.IsSpriteBatchStyled)) * scaleMatrix);
                 cubes[1].DrawPrimitiveCube(GraphicsDevice, _drawingEffect, _generatedTextureCubeFromFaceArray);
                 i++;
             }
+        }
+
+        public Vector3 GetScreenFaceDrawPositions(int i, bool spriteBatchPlacement)
+        {
+            if (spriteBatchPlacement)
+                return new Vector3(i * 2 + 70, i * 2, i * -2.5f + -8);
+            else
+                return new Vector3(i * 2 + 70, i * 2, 0.0f);
         }
 
         #endregion
@@ -348,10 +371,14 @@ namespace CubeMapHdrConversionDx
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["QuadDraw"];
-            //_drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
             _drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
-            //_drawingEffect.Parameters["View"].SetValue(_cameraCinematic.View);
-            //_drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position); // _camera.Position // Vector3.Zero
+            _drawingEffect.Parameters["View"].SetValue(_cameraCinematic.View);
+            _drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position); // _camera.Position // Vector3.Zero
+
+             _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
+
+
+            
 
             //var m = _cameraCinematic.View;
             //m.Translation = new Vector3(0, 0, 0);
@@ -359,15 +386,17 @@ namespace CubeMapHdrConversionDx
             //m.Right = Vector3.Cross(m.Up, m.Forward);
             //m.Up = Vector3.Cross(m.Right, m.Forward);
 
-            var m = _cameraCinematic.View;
-            m.Right = new Vector3          (1, 0, 0);
-            m.Up = new Vector3             (0, -1, 0);
-            m.Forward = new Vector3      (0, 0, 1);
-            m.Translation = new Vector3 (-1f, +1f, 0);
 
-            _drawingEffect.Parameters["View"].SetValue(m);
-            _drawingEffect.Parameters["CameraPosition"].SetValue(Vector3.Zero); // _camera.Position // Vector3.Zero
-            _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
+            //_drawingEffect.CurrentTechnique = _drawingEffect.Techniques["QuadDraw"];
+            //_drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
+            //var m = _cameraCinematic.View;
+            //m.Right = new Vector3          (1, 0, 0);
+            //m.Up = new Vector3             (0, -1, 0);
+            //m.Forward = new Vector3      (0, 0, 1);
+            //m.Translation = new Vector3 (-1f, +1f, 0);
+            //_drawingEffect.Parameters["View"].SetValue(m);
+            //_drawingEffect.Parameters["CameraPosition"].SetValue(Vector3.Zero); // _camera.Position // Vector3.Zero
+            //_drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
 
             int xoffset = 0;
             Color textColor = Color.White;

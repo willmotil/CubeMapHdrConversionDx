@@ -10,12 +10,15 @@ namespace Microsoft.Xna.Framework
     {
         List<VertexPositionNormalTexture> _verticeList = new List<VertexPositionNormalTexture>();
         VertexPositionNormalTexture[] _vertices;
-        public void AddVertexRectangleToBuffer(GraphicsDevice gd, Rectangle r, float depth)
+        public void AddVertexRectangleToBuffer(GraphicsDevice gd, Rectangle r, float depth, bool isPerspective)
         {
-            //if (GraphicsDevice.RasterizerState != RasterizerState.CullClockwise)
-            //var scalar = new Vector3(1f / (gd.Viewport.Width /2), 1f / (gd.Viewport.Height / 2), 1f);
-            var scalar = new Vector3(1f / (gd.Viewport.Width ), 1f / (gd.Viewport.Height ), 1f);
-            //scalar = new Vector3(1, 1, 1);
+            var scalar = new Vector3(1, 1, 1);
+            if( isPerspective == false)
+            {
+                //if (GraphicsDevice.RasterizerState != RasterizerState.CullClockwise)
+                //var scalar = new Vector3(1f / (gd.Viewport.Width /2), 1f / (gd.Viewport.Height / 2), 1f);
+                scalar = new Vector3(1f / (gd.Viewport.Width), 1f / (gd.Viewport.Height), 1f);
+            }
             var normal = Vector3.Normalize(new Vector3(0, 0, depth));
             _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Left, r.Top, depth) * scalar, normal, new Vector2(0f, 0f))); ;  // p1
             _verticeList.Add(new VertexPositionNormalTexture(new Vector3(r.Left, r.Bottom, depth) * scalar, normal, new Vector2(0f, 1f))); // p0

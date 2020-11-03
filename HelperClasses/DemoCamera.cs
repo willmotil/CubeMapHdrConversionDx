@@ -40,6 +40,8 @@ namespace Microsoft.Xna.Framework
         public Vector3 Right { get { return _cameraWorld.Right; } }
         public float Near { get { return _near; } }
         public float Far { get { return _far; } }
+        public bool IsSpriteBatchStyled { get { return _spriteBatchStyle; } }
+        public bool IsPerspectiveStyled { get { return _perspectiveStyle; } }
         public float WayPointCycleDurationInTotalSeconds { get { return _durationInSeconds; } set { _durationInSeconds = value; } }
         public float LookAtSpeedPerSecond { get; set; } = 1f;
         public float MovementSpeedPerSecond { get; set; } = 1f;

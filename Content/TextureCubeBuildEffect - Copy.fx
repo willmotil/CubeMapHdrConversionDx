@@ -257,9 +257,9 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
 
 
     // the following values are in degrees
-    float numberOfSamplesHemisphere = 1.0; // we want the smallest amount with good quality
+    float numberOfSamplesHemisphere = 15.0; // we want the smallest amount with good quality
     float numberOfSamplesAround = 4.0; // same as above
-    float hemisphereMaxAngle = 1.0f; // we really want 90
+    float hemisphereMaxAngle = 10.0f; // we really want 90
 
     float minimumAdjustment = 2.1f; // this is to help control the sampling geometry.
     float mipSampleLevel = 0; // this is the sample or mipmap level from the enviromental map we take the current pixel from.
