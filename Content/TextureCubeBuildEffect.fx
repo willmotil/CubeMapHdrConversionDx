@@ -308,8 +308,8 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
 
     // the following values are in degrees
     float numberOfSamplesHemisphere = 20.0; // we want the smallest amount with good quality
-    float numberOfSamplesAround = 30.0; // same as above
-    float hemisphereMaxAngle = 25.0f; // we really want 90
+    float numberOfSamplesAround = 4.0; // same as above
+    float hemisphereMaxAngle = 3.0f; // we really want 90
 
     float minimumAdjustment = 2.1f; // this is to help control the sampling geometry.
     float mipSampleLevel = 0; // this is the sample or mipmap level from the enviromental map we take the current pixel from.
@@ -375,6 +375,34 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
 }
 
 
+/*
+
+
+vec3 irradiance = vec3(0.0);
+
+vec3 up    = vec3(0.0, 1.0, 0.0);
+vec3 right = cross(up, normal);
+up         = cross(normal, right);
+
+float sampleDelta = 0.025;
+float nrSamples = 0.0;
+for(float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
+{
+    for(float theta = 0.0; theta < 0.5 * PI; theta += sampleDelta)
+    {
+        // spherical to cartesian (in tangent space)
+        vec3 tangentSample = vec3(sin(theta) * cos(phi),  sin(theta) * sin(phi), cos(theta));
+        // tangent space to world
+        vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
+
+        irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
+        nrSamples++;
+    }
+}
+irradiance = PI * irradiance * (1.0 / float(nrSamples));
+
+
+*/
 
 
 
