@@ -490,6 +490,11 @@ namespace Microsoft.Xna.Framework
                 DrawHelpers.dot = CreateDotTexture(device, Color.White);
         }
 
+        public static Vector2 ToVector2(this Vector3 v)
+        {
+            return new Vector2(v.X, v.Y);
+        }
+
         public static Texture2D CreateDotTexture(GraphicsDevice device, Color color)
         {
             Color[] data = new Color[1] { color };

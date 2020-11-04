@@ -69,6 +69,56 @@ struct FaceStruct
 // functions
 //____________________________________
 
+float3   rotatePointAboutYaxis(float3 p, float q)
+{
+    //z' = z*cos s - x*sin s
+    //x' = z*sin s + x*cos s
+    //y' = y
+    return float3((p.z * cos(q) - p.x * sin(q)), p.y, (p.z * sin(q) + p.x * cos(q)));
+}
+float3   rotatePointAboutZaxis(float3 p, float q)
+{
+    //x' = x*cos s - y*sin s
+    //y' = x*sin s + y*cos s 
+    //z' = z
+    return float3((p.x * cos(q) - p.y * sin(q)),(p.x * sin(q) + p.y * cos(q)), p.z);
+}
+
+float4x4 CreateFromAxisAngle(float3 axis, float angle)
+{
+    float x = axis.x;
+    float y = axis.y;
+    float z = axis.z;
+    float sinTheta = sin(angle);
+    float cosTheta = cos(angle);
+    float numXX = x * x;
+    float numYY = y * y;
+    float numZZ = z * z;
+    float numXY = x * y;
+    float numXZ = x * z;
+    float numYZ = y * z;
+    float4x4 result = float4x4
+        (
+        numXX + (cosTheta * (1.0f - numXX)),
+        (numXY - (cosTheta * numXY)) + (sinTheta * z),
+        (numXZ - (cosTheta * numXZ)) - (sinTheta * y),
+        0,
+        (numXY - (cosTheta * numXY)) - (sinTheta * z),
+        numYY + (cosTheta * (1.0f - numYY)),
+        (numYZ - (cosTheta * numYZ)) + (sinTheta * x),
+        0,
+        (numXZ - (cosTheta * numXZ)) + (sinTheta * y),
+        (numYZ - (cosTheta * numYZ)) - (sinTheta * x),
+        numZZ + (cosTheta * (1.0f - numZZ)),
+        0,
+        0,
+        0,
+        0,
+        1.0f
+    );
+    return result;
+}
+
 // I made this up to do this tranform because i couldn't find the code to do it anywere.
 
 
@@ -257,9 +307,9 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
 
 
     // the following values are in degrees
-    float numberOfSamplesHemisphere = 1.0; // we want the smallest amount with good quality
-    float numberOfSamplesAround = 4.0; // same as above
-    float hemisphereMaxAngle = 1.0f; // we really want 90
+    float numberOfSamplesHemisphere = 20.0; // we want the smallest amount with good quality
+    float numberOfSamplesAround = 30.0; // same as above
+    float hemisphereMaxAngle = 25.0f; // we really want 90
 
     float minimumAdjustment = 2.1f; // this is to help control the sampling geometry.
     float mipSampleLevel = 0; // this is the sample or mipmap level from the enviromental map we take the current pixel from.
@@ -275,21 +325,27 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
     float totalSampleCount = 0;
     
     // sample enviromental cubemap
-    for (float phi = 0.01; phi < 6.283; phi += stepPhi) // z rot.
-    {
         for (float theta = 0.01f; theta < hemisphereMaxAngleTheta; theta += stepTheta) // y 
         {
-            // calculate the new vector around the normal to sample rotationally.
-            float3 temp = cos(phi) * right + sin(phi) * up;
-            float4 sampleVector = float4(cos(theta) * normal + sin(theta) * temp, mipSampleLevel);
-            sampleVector.rgb = normalize(sampleVector.rgb);
-            float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
+            float3 temp = normalize(rotatePointAboutYaxis(normal, theta));
+            for (float phi = 0.01; phi < 6.283; phi += stepPhi) // z rot.
+            {
+            //// calculate the new vector around the normal to sample rotationally.
+            //    float3 temp = cos(phi) * right + sin(phi) * up;
+            //    float4 sampleVector = float4(cos(theta) * normal + sin(theta) * temp, mipSampleLevel);
+            //    sampleVector.rgb = normalize(sampleVector.rgb);
+            //    float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
 
-            // some possible weighting functions.
-            
-            float avg = (sampledColor.r + sampledColor.b + sampledColor.g) * 0.33333f;
-            float NdotS = saturate(dot(normal, sampleVector.rgb));
-            float phiMuliplier = 1.0f - (phi / (5.283f + 1.0f));
+            //    // some possible weighting functions.
+
+            //    float avg = (sampledColor.r + sampledColor.b + sampledColor.g) * 0.33333f;
+            //    float NdotS = saturate(dot(normal, sampleVector.rgb));
+            //    float phiMuliplier = 1.0f - (phi / (5.283f + 1.0f));
+
+                float4x4 zrot = CreateFromAxisAngle(normal, phi);
+                float4 sampleVector = mul(float4(temp, 1.0f), zrot);
+                sampleVector.w = mipSampleLevel;
+                float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
 
             // accumulate and weigh the geometrical sampled pattern ... here is the hard part.
 

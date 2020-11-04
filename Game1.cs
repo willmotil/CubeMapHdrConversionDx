@@ -18,7 +18,10 @@ namespace CubeMapHdrConversionDx
         private SpriteBatch _spriteBatch;
         private SpriteFont _font;
         string msg = "";
+        float elapsed;
+        float elapsedSecond;
 
+        private BasicEffect _basicEffect;
         private Effect _textureCubeBuildEffect;
         private Effect _drawingEffect;
 
@@ -133,6 +136,19 @@ namespace CubeMapHdrConversionDx
             _cameraCinematic.WayPointCycleDurationInTotalSeconds = 30f;
             _cameraCinematic.MovementSpeedPerSecond = 8f;
             _cameraCinematic.SetWayPoints(_cameraWayPoints, true, 30);
+
+            Orthographic(GraphicsDevice);
+        }
+
+        public void Orthographic(GraphicsDevice device)
+        {
+            float forwardDepthDirection = 1f;
+            _basicEffect = new BasicEffect(GraphicsDevice);
+            _basicEffect.VertexColorEnabled = true;
+            _basicEffect.TextureEnabled = true;
+            _basicEffect.World = Matrix.Identity;
+            _basicEffect.View = Matrix.Invert(Matrix.CreateWorld(new Vector3(0,0,0), new Vector3(0, 0, 1), Vector3.Down));
+            _basicEffect.Projection = Matrix.CreateOrthographicOffCenter(0, device.Viewport.Width, -device.Viewport.Height, 0, forwardDepthDirection * 0, forwardDepthDirection * 1f);
         }
 
         public void CreatePrimitiveSceneCubes()
@@ -210,6 +226,12 @@ namespace CubeMapHdrConversionDx
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            elapsedSecond += elapsed;
+            if (elapsedSecond > 1f)
+                elapsedSecond -= 1f;
 
             if (IsPressedWithDelay(Keys.Space, gameTime))
                 _useDemoWaypoints = !_useDemoWaypoints;
@@ -328,38 +350,40 @@ namespace CubeMapHdrConversionDx
             _drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
             _drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position);
 
+            float scale = 3f;
             Matrix scaleMatrix = Matrix.Identity;
             if (_cameraCinematic.IsSpriteBatchStyled)
-                    scaleMatrix = Matrix.CreateScale(1f);
+                    scaleMatrix = Matrix.CreateScale(scale);
                 else
-                    scaleMatrix = Matrix.CreateScale(10f);
+                    scaleMatrix = Matrix.CreateScale(scale);
             int i = 0;
             if (_textureCubeEnviroment != null)
             {
-                _drawingEffect.Parameters["World"].SetValue(scaleMatrix * Matrix.CreateTranslation(GetScreenFaceDrawPositions(i, _cameraCinematic.IsSpriteBatchStyled)) );
+                _drawingEffect.Parameters["World"].SetValue(scaleMatrix * Matrix.CreateTranslation(GetScreenFaceDrawPositions(i, scale, _cameraCinematic.IsSpriteBatchStyled)) );
                 cubes[1].DrawPrimitiveCube(GraphicsDevice, _drawingEffect, _textureCubeEnviroment);
                 i++;
             }
             if (_textureCubeIblDiffuseIllumination != null)
             {
-                _drawingEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(GetScreenFaceDrawPositions(i, _cameraCinematic.IsSpriteBatchStyled)) * scaleMatrix);
+                _drawingEffect.Parameters["World"].SetValue(scaleMatrix * Matrix.CreateTranslation(GetScreenFaceDrawPositions(i, scale,_cameraCinematic.IsSpriteBatchStyled)));
                 cubes[1].DrawPrimitiveCube(GraphicsDevice, _drawingEffect, _textureCubeIblDiffuseIllumination);
                 i++;
             }
             if (_generatedTextureCubeFromFaceArray != null)
             {
-                _drawingEffect.Parameters["World"].SetValue(scaleMatrix * Matrix.CreateTranslation(GetScreenFaceDrawPositions(i, _cameraCinematic.IsSpriteBatchStyled)) * scaleMatrix);
+                _drawingEffect.Parameters["World"].SetValue(scaleMatrix * Matrix.CreateTranslation(GetScreenFaceDrawPositions(i, scale, _cameraCinematic.IsSpriteBatchStyled)));
                 cubes[1].DrawPrimitiveCube(GraphicsDevice, _drawingEffect, _generatedTextureCubeFromFaceArray);
                 i++;
             }
         }
 
-        public Vector3 GetScreenFaceDrawPositions(int i, bool spriteBatchPlacement)
+        public Vector3 GetScreenFaceDrawPositions(int i, float scale, bool spriteBatchPlacement)
         {
+
             if (spriteBatchPlacement)
-                return new Vector3(i * 2 + 70, i * 2, i * -2.5f + -8);
+                return new Vector3(i * 2 + 70, i * 2, 0.0f) * scale;
             else
-                return new Vector3(i * 2 + 70, i * 2, 0.0f);
+                return new Vector3(i * 2 + 70, i * 2, i * -2.5f + -8) * scale;
         }
 
         #endregion
@@ -445,7 +469,9 @@ namespace CubeMapHdrConversionDx
 
         public void DrawSpriteBatches(GameTime gameTime)
         {
-            _spriteBatch.Begin();
+            _spriteBatch.Begin(SpriteSortMode.Immediate,null,null,null,null, _basicEffect,null);
+
+            SpriteBatchDrawVectorRotations(gameTime);
 
             //SpriteBatchDrawLoadedAndGeneratedTextures();
 
@@ -454,6 +480,32 @@ namespace CubeMapHdrConversionDx
             _spriteBatch.DrawString(_font, msg, new Vector2(10, 210), Color.Moccasin);
 
             _spriteBatch.End();
+        }
+
+        public void SpriteBatchDrawVectorRotations(GameTime gameTime)
+        {
+            Vector3 normal = new Vector3(1, 1, 1);
+            normal.Normalize();
+            var vectorPosition = normal * 100;
+            Vector3 offset = new Vector3(100, 100, 0);
+            vectorPosition += offset;
+            DrawHelpers.DrawCrossHair(offset.ToVector2(), 10, Color.White);
+            DrawHelpers.DrawBasicLine(offset.ToVector2(), vectorPosition.ToVector2(), 1 ,Color.White);
+
+            var yrot= Matrix.CreateRotationY(.4f);
+            var normal2 = Vector3.Transform(normal, yrot);
+            var vectorPosition2 = normal2 * 100;
+            vectorPosition2 += offset;
+            DrawHelpers.DrawCrossHair(offset.ToVector2(), 10, Color.Yellow);
+            DrawHelpers.DrawBasicLine(offset.ToVector2(), vectorPosition2.ToVector2(), 1, Color.Yellow);
+
+            var radians = elapsedSecond * 3.14159265358f*2f;
+            var aarot = Matrix.CreateFromAxisAngle(normal, radians);
+            var normal3 = Vector3.Transform(normal2, aarot);
+            var vectorPosition3 = normal3 * 100;
+            vectorPosition3 += offset;
+            DrawHelpers.DrawCrossHair(offset.ToVector2(), 10, Color.Red);
+            DrawHelpers.DrawBasicLine(offset.ToVector2(), vectorPosition3.ToVector2(), 1, Color.Red);
         }
 
         public void SpriteBatchDrawLoadedAndGeneratedTextures()
