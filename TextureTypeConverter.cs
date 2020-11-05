@@ -39,6 +39,16 @@ namespace Microsoft.Xna.Framework
             if (useHdrFormat)
                 pixelformat = SurfaceFormat.Vector4;
             TextureCube destination = new TextureCube(gd, sizeSquarePerFace, generateMips, pixelformat);
+            RenderTextureCubeToTextureCube(gd, _textureCubeBuildEffect, "CubeMapToTexture", source, ref destination, generateMips, pixelformat, sizeSquarePerFace);
+            return destination;
+        }
+
+        public static TextureCube ConvertTextureCubeToIrradianceMap(GraphicsDevice gd, Effect _textureCubeBuildEffect, TextureCube source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        {
+            var pixelformat = SurfaceFormat.Color;
+            if (useHdrFormat)
+                pixelformat = SurfaceFormat.Vector4;
+            TextureCube destination = new TextureCube(gd, sizeSquarePerFace, generateMips, pixelformat);
             RenderTextureCubeToTextureCube(gd, _textureCubeBuildEffect, "CubemapToDiffuseIlluminationCubeMap", source, ref destination, generateMips, pixelformat, sizeSquarePerFace);
             return destination;
         }

@@ -295,29 +295,28 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
     //float3 right = normalize(cross(up, input.FaceNormal));
     //up = cross(input.FaceNormal, right);
 
-    float3 normal = input.PositionNormal;
-    float3 up = input.FaceUp;
-    float3 right = normalize(cross(up, input.PositionNormal));
-    up = cross(input.PositionNormal, right);
-
     //float3 normal = input.PositionNormal;
     //float3 up = float3(0, -1, 0);
     //float3 right = normalize(cross(up, input.PositionNormal));
     //up = cross(input.PositionNormal, right);
 
+    float3 normal = normalize(input.PositionNormal);
+    float3 up = input.FaceUp;
+    float3 right = normalize(cross(up, input.PositionNormal));
+    up = cross(input.PositionNormal, right);
 
     // the following values are in degrees
-    float numberOfSamplesHemisphere = 20.0; // we want the smallest amount with good quality
-    float numberOfSamplesAround = 4.0; // same as above
-    float hemisphereMaxAngle = 3.0f; // we really want 90
+    float numberOfSamplesHemisphere = 10.0f; // we want the smallest amount with good quality
+    float numberOfSamplesAround = 2.0f; // same as above
+    float hemisphereMaxAngle = 1.0f; // we really want 90
 
     float minimumAdjustment = 2.1f; // this is to help control the sampling geometry.
     float mipSampleLevel = 0; // this is the sample or mipmap level from the enviromental map we take the current pixel from.
 
     // calculated from the above for adjusting the loop geometry pattern.
     float hemisphereMaxAngleTheta = hemisphereMaxAngle * ToRadians; // computed
-    float stepTheta = (hemisphereMaxAngle / numberOfSamplesHemisphere) * ToRadians - 0.05f;
-    float stepPhi = (360.0f / numberOfSamplesAround) * ToRadians - 0.05f;
+    float stepTheta = (hemisphereMaxAngle / numberOfSamplesHemisphere) * ToRadians; // -0.05f;
+    float stepPhi = (360.0f / numberOfSamplesAround) * ToRadians; // -0.05f;
 
     float3 accumulatedColor = float3(0, 0, 0);
     float totalWeight = 0;
@@ -325,41 +324,41 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
     float totalSampleCount = 0;
     
     // sample enviromental cubemap
-        for (float theta = 0.01f; theta < hemisphereMaxAngleTheta; theta += stepTheta) // y 
+        for (float theta = 0.001f; theta < hemisphereMaxAngleTheta; theta += stepTheta) // y 
         {
             float3 temp = normalize(rotatePointAboutYaxis(normal, theta));
-            for (float phi = 0.01; phi < 6.283; phi += stepPhi) // z rot.
+            for (float phi = 0.01f; phi < 6.283f; phi += stepPhi) // z rot.
             {
-            //// calculate the new vector around the normal to sample rotationally.
-            //    float3 temp = cos(phi) * right + sin(phi) * up;
-            //    float4 sampleVector = float4(cos(theta) * normal + sin(theta) * temp, mipSampleLevel);
-            //    sampleVector.rgb = normalize(sampleVector.rgb);
-            //    float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
-
-            //    // some possible weighting functions.
-
-            //    float avg = (sampledColor.r + sampledColor.b + sampledColor.g) * 0.33333f;
-            //    float NdotS = saturate(dot(normal, sampleVector.rgb));
-            //    float phiMuliplier = 1.0f - (phi / (5.283f + 1.0f));
+                //// calculate the new vector around the normal to sample rotationally.
+                // float3 temp = cos(phi) * right + sin(phi) * up;
+                // float4 sampleVector = float4(cos(theta) * normal + sin(theta) * temp, mipSampleLevel);
+                // sampleVector.rgb = normalize(sampleVector.rgb);
+                // float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
 
                 float4x4 zrot = CreateFromAxisAngle(normal, phi);
                 float4 sampleVector = mul(float4(temp, 1.0f), zrot);
                 sampleVector.w = mipSampleLevel;
                 float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
 
-            // accumulate and weigh the geometrical sampled pattern ... here is the hard part.
+                //// some possible weighting functions.
 
-            accumulatedColor += sampledColor;
-            totalWeight++;
+                 float avg = (sampledColor.r + sampledColor.b + sampledColor.g) * 0.33333f;
+                 float NdotS = saturate(dot(normal, sampleVector.rgb));
+                 float phiMuliplier = 1.0f - (phi / (5.283f + 1.0f));
 
-            //accumulatedColor += sampledColor * NdotS;
-            //totalWeight += NdotS;
+                // accumulate and weigh the geometrical sampled pattern ... here is the hard part.
 
-            //accumulatedColor += sampledColor * (cos(theta) * sin(theta));
-            //totalWeight += cos(theta) * sin(theta);
+                //accumulatedColor += sampledColor;
+                //totalWeight++;
 
-            //accumulatedColor += sampledColor * phiMuliplier;
-            //totalWeight += phiMuliplier;
+                accumulatedColor += sampledColor * NdotS;
+                totalWeight += NdotS;
+
+                //accumulatedColor += sampledColor * (cos(theta) * sin(theta));
+                //totalWeight += cos(theta) * sin(theta);
+
+                //accumulatedColor += sampledColor * phiMuliplier;
+                //totalWeight += phiMuliplier;
         }
 
     }

@@ -119,7 +119,7 @@ namespace CubeMapHdrConversionDx
 
         public void ClientResize(object sender, EventArgs e)
         {
-            SetupTheCameras();
+            //SetupTheCameras();
         }
 
         public void SetupTheCameras()
@@ -130,7 +130,7 @@ namespace CubeMapHdrConversionDx
 
             //_cameraCinematic = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(0, 0, 0), new Vector3(0, 0, 1), Vector3.Down, 0.01f, 10000f, f90, false, true, false);
 
-            _cameraCinematic = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(0, 0, 0), new Vector3(0, 0, 1), Vector3.Up, 0.01f, 10000f, f90, true, false, false);
+            _cameraCinematic = new DemoCamera(GraphicsDevice, _spriteBatch, null, new Vector3(0, 0, 0), Vector3.Forward, Vector3.Up, 0.01f, 10000f, f90, true, false, false);
             ////_cameraCinematic.TransformCamera(_cameraCinematic.World.Translation, _targetLookAt, _cameraCinematic.World.Up);
             ////_cameraCinematic.Up = Vector3.Up;
             _cameraCinematic.WayPointCycleDurationInTotalSeconds = 30f;
@@ -175,7 +175,7 @@ namespace CubeMapHdrConversionDx
                 // array to... 
                 // to another cube.                         FaceArrayToCubeFaces
                 _generatedTextureCubeFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
-
+  
                 // array to... 
                 // a spherical map
                 _generatedSphericalTexture2DFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
@@ -186,7 +186,8 @@ namespace CubeMapHdrConversionDx
 
                 // texture cube  ...
                 // to cube                                     CubemapToCubemap  DiffuseIlluminationCubeMap
-                _textureCubeIblDiffuseIllumination = TextureTypeConverter.ConvertTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
+                //_textureCubeIblDiffuseIllumination = TextureTypeConverter.ConvertTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
+                _textureCubeIblDiffuseIllumination = TextureTypeConverter.ConvertTextureCubeToIrradianceMap(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
 
             }
         }
@@ -249,7 +250,7 @@ namespace CubeMapHdrConversionDx
                 _wireframe = !_wireframe;
 
             if (IsPressedWithDelay(Keys.F5, gameTime))
-                _cameraCinematic.TransformCamera(new Vector3(0, 0, 0), _cameraCinematic.Forward, Vector3.Up);
+                _cameraCinematic.TransformCamera(new Vector3(0, 0, 0), Vector3.Forward, Vector3.Up);
 
             if (IsPressedWithDelay(Keys.F6, gameTime))
             {
@@ -279,7 +280,7 @@ namespace CubeMapHdrConversionDx
 
             msg =
             $" Camera IsSpriteBatchStyled {_cameraCinematic.IsSpriteBatchStyled}" +
-            $"\n Camera.View.Translation: \n  { _cameraCinematic.View.Translation.X.ToString("N3") } { _cameraCinematic.View.Translation.Y.ToString("N3") } { _cameraCinematic.View.Translation.Z.ToString("N3") }" +
+            $"\n Camera.World.Translation: \n  { _cameraCinematic.World.Translation.X.ToString("N3") } { _cameraCinematic.World.Translation.Y.ToString("N3") } { _cameraCinematic.World.Translation.Z.ToString("N3") }" +
             $"\n Camera.Forward: \n  { _cameraCinematic.Forward.X.ToString("N3") } { _cameraCinematic.Forward.Y.ToString("N3") } { _cameraCinematic.Forward.Z.ToString("N3") }" + 
             $"\n Up: \n { _cameraCinematic.Up.X.ToString("N3") } { _cameraCinematic.Up.Y.ToString("N3") } { _cameraCinematic.Up.Z.ToString("N3") } "+
             $"\n Cullmode \n {GraphicsDevice.RasterizerState.CullMode} \n MipLevelTestValue {_mipLevelTestValue} " +
@@ -381,9 +382,9 @@ namespace CubeMapHdrConversionDx
         {
 
             if (spriteBatchPlacement)
-                return new Vector3(i * 2 + 70, i * 2, 0.0f) * scale;
+                return new Vector3(i * 2 + 10, i * 2, 0.0f) * scale;
             else
-                return new Vector3(i * 2 + 70, i * 2, i * -2.5f + -8) * scale;
+                return new Vector3(i * 2 + 10, i * 2, i * -2.5f + -8) * scale;
         }
 
         #endregion
