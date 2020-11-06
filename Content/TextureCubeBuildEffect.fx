@@ -277,8 +277,55 @@ float3 SphericalUvCoordinatesToNormal(float2 uvCoords)
     v.z = -cos(uv.x) * siny;
     // adjustment rotational.
     float hpi = PI / 2.0f;
-    v = float3(cos(hpi) * v.x + sin(hpi) * v.z, -v.y, -sin(hpi) * v.x + cos(hpi) * v.z);
+    v = float3(cos(hpi) * v.x + sin(hpi) * v.z, v.y, -sin(hpi) * v.x + cos(hpi) * v.z);
     return v;
+}
+
+float4 GetSphericalIrradiance(float2 pixelpos)
+{
+
+    float3 irradiance = float3(0.0f, 0.0f, 0.0f);
+    float sampleDelta = 0.025f;
+    float nrSamples = 0.0f;
+
+    float2 uv = (pixelpos.xy + 1.0f) / 2.0f;
+    float3 normal = SphericalUvCoordinatesToNormal(uv);
+    float2 nuv = NormalTo2dSphericalUvCoordinates(normal);
+    irradiance += tex2D(TextureSamplerDiffuse, nuv).rgb;
+
+    //float3 normal = SphericalUvCoordinatesToNormal(pixelpos);
+
+    //float3 up = input.FaceUp;
+    //float3 right = normalize(cross(up, input.PositionNormal));
+    //up = cross(input.PositionNormal, right);
+
+    //float3 up = float3(0.0f, 1.0f, 0.0f);
+    //float3 right = cross(up, normal);
+    //up = cross(normal, right);
+
+
+    //// spherical to cartesian (in tangent space)
+    //float3 tangentSample = -float3(sin(0) * cos(0), sin(0) * sin(0), cos(0));
+    //// tangent space to world
+    //float3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal; // N;
+    //float2 nuv = NormalTo2dSphericalUvCoordinates(sampleVec);
+    //irradiance += tex2D(TextureSamplerDiffuse, nuv).rgb;
+    //nrSamples =1.0f;
+
+    //for (float phi = 0.0f; phi < 2.0f * PI; phi += sampleDelta)
+    //{
+    //    for (float theta = 0.0f; theta < 0.5f * PI; theta += sampleDelta)
+    //    {
+    //        //// spherical to cartesian (in tangent space)
+    //        //float3 tangentSample = float3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+    //        //// tangent space to world
+    //        //float3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal; // N;
+    //        //irradiance += tex2D(TextureSamplerDiffuse, sampleVec).rgb * cos(theta) * sin(theta);
+    //        //nrSamples++;
+    //    }
+    //}
+    //irradiance = PI * irradiance * (1.0f / float(nrSamples));
+    return float4(irradiance, 1.0f);
 }
 
 
@@ -286,7 +333,7 @@ float3 SphericalUvCoordinatesToNormal(float2 uvCoords)
 //
 // F  needs work.
 //
-float4 GetIrradiance(float2 pixelpos, int faceToMap)
+float4 GetCubeIrradiance(float2 pixelpos, int faceToMap)
 {
     FaceStruct input = PosUvFaceToNormal(pixelpos, faceToMap);
 
@@ -373,37 +420,35 @@ float4 GetIrradiance(float2 pixelpos, int faceToMap)
     return final;
 }
 
+//____________________________________
+// shaders and technique SphericalToCubeMap
+// Copy 2d spherical hdr to enviromental cubemap
+//____________________________________
 
-/*
-
-
-vec3 irradiance = vec3(0.0);
-
-vec3 up    = vec3(0.0, 1.0, 0.0);
-vec3 right = cross(up, normal);
-up         = cross(normal, right);
-
-float sampleDelta = 0.025;
-float nrSamples = 0.0;
-for(float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
+HdrToCubeMapVertexShaderOutput HdrToSphericalVS(in HdrToCubeMapVertexShaderInput input)
 {
-    for(float theta = 0.0; theta < 0.5 * PI; theta += sampleDelta)
-    {
-        // spherical to cartesian (in tangent space)
-        vec3 tangentSample = vec3(sin(theta) * cos(phi),  sin(theta) * sin(phi), cos(theta));
-        // tangent space to world
-        vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
-
-        irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
-        nrSamples++;
-    }
+    HdrToCubeMapVertexShaderOutput output = (HdrToCubeMapVertexShaderOutput)0;
+    output.Position = input.Position;
+    output.Position3D = input.Position;
+    return output;
 }
-irradiance = PI * irradiance * (1.0 / float(nrSamples));
 
+float4 SphericalToSphericalPS(HdrToCubeMapVertexShaderOutput input) : COLOR
+{
+    float4 color = GetSphericalIrradiance(input.Position3D);
+    return color;
+}
 
-*/
-
-
+technique SphericalToIlluminationSpherical
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL
+            HdrToSphericalVS();
+        PixelShader = compile PS_SHADERMODEL
+            SphericalToSphericalPS();
+    }
+};
 
 //____________________________________
 // shaders and technique SphericalToCubeMap
@@ -456,7 +501,7 @@ HdrToCubeMapVertexShaderOutput HdrToDiffuseIlluminationCubeMapVS(in HdrToCubeMap
 
 float4 CubemapToDiffuseIlluminationCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
 {
-    return GetIrradiance(input.Position3D, FaceToMap);
+    return GetCubeIrradiance(input.Position3D, FaceToMap);
 }
 
 technique CubemapToDiffuseIlluminationCubeMap
@@ -766,4 +811,104 @@ technique TextureFacesToSpherical
 //    //output.PositionNormal = new Vector3(output.PositionNormal.z, -output.PositionNormal.y, output.PositionNormal.x); // invert
 //    output.PositionNormal = normalize(output.PositionNormal);
 //    return output;
+//}
+
+//  Try this.
+//float4 PixelShaderFunction(VertexShaderOutput input) : COLOR
+//{
+//    float3 normal = normalize(float3(input.InterpolatedPosition.xy, 1));
+//    if (cubeFace == 2)
+//        normal = normalize(float3(input.InterpolatedPosition.x,  1, -input.InterpolatedPosition.y));
+//    else if (cubeFace == 3)
+//        normal = normalize(float3(input.InterpolatedPosition.x, -1,  input.InterpolatedPosition.y));
+//    else if (cubeFace == 0)
+//        normal = normalize(float3(1, input.InterpolatedPosition.y,-input.InterpolatedPosition.x));
+//    else if (cubeFace == 1)
+//        normal = normalize(float3(-1, input.InterpolatedPosition.y, input.InterpolatedPosition.x));
+//    else if (cubeFace == 5)
+//        normal = normalize(float3(-input.InterpolatedPosition.x, input.InterpolatedPosition.y, -1));
+//
+//    float3 up = float3(0,1,0);
+//    float3 right = normalize(cross(up,normal));
+//    up = cross(normal,right);
+//
+//    float3 sampledColour = float3(0,0,0);
+//    float index = 0;
+//    for (float phi = 0; phi < 6.283; phi += 0.025)
+//    {
+//        for (float theta = 0; theta < 1.57; theta += 0.1)
+//        {
+//            float3 temp = cos(phi) * right + sin(phi) * up;
+//            float3 sampleVector = cos(theta) * normal + sin(theta) * temp;
+//            sampledColour += texCUBE(diffuseCubemap_Sampler, sampleVector).rgb *
+//                                      cos(theta) * sin(theta);
+//            index++;
+//        }
+//    }
+//
+//    return float4(PI * sampledColour / index), 1 );
+//}
+
+
+/*
+
+
+vec3 irradiance = vec3(0.0);
+
+vec3 up    = vec3(0.0, 1.0, 0.0);
+vec3 right = cross(up, normal);
+up         = cross(normal, right);
+
+float sampleDelta = 0.025;
+float nrSamples = 0.0;
+for(float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
+{
+    for(float theta = 0.0; theta < 0.5 * PI; theta += sampleDelta)
+    {
+        // spherical to cartesian (in tangent space)
+        vec3 tangentSample = vec3(sin(theta) * cos(phi),  sin(theta) * sin(phi), cos(theta));
+        // tangent space to world
+        vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
+
+        irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
+        nrSamples++;
+    }
+}
+irradiance = PI * irradiance * (1.0 / float(nrSamples));
+
+
+*/
+
+//float4 GetSphericalIrradiance(float2 pixelpos, int faceToMap)
+//{
+//    FaceStruct input = PosUvFaceToNormal(pixelpos, faceToMap);
+//
+//    float3 normal = normalize(input.PositionNormal);
+//
+//    //float3 up = input.FaceUp;
+//    //float3 right = normalize(cross(up, input.PositionNormal));
+//    //up = cross(input.PositionNormal, right);
+//
+//    float3 up = float3(0.0f, 1.0f, 0.0f);
+//    float3 right = cross(up, normal);
+//    up = cross(normal, right);
+//
+//    float3 irradiance = float3(0.0f, 1.0f, 0.0f);
+//    float sampleDelta = 0.025f;
+//    float nrSamples = 0.0f;
+//    for (float phi = 0.0f; phi < 2.0f * PI; phi += sampleDelta)
+//    {
+//        for (float theta = 0.0f; theta < 0.5f * PI; theta += sampleDelta)
+//        {
+//            // spherical to cartesian (in tangent space)
+//            float3 tangentSample = float3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+//            // tangent space to world
+//            float3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal; // N;
+//
+//            irradiance += tex2D(TextureSamplerDiffuse, sampleVec).rgb * cos(theta) * sin(theta);
+//            nrSamples++;
+//        }
+//    }
+//    irradiance = PI * irradiance * (1.0f / float(nrSamples));
+//    return float4(irradiance, 1.0f);
 //}

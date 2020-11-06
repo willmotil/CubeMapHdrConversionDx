@@ -27,6 +27,7 @@ namespace CubeMapHdrConversionDx
 
         private Texture2D _sphericalTexture2DEnviromentalMap;
         private Texture2D _generatedSphericalTexture2DFromCube;
+        private Texture2D _generatedSphericalTexture2DFromSphericalTexture2D;
         private Texture2D[] _generatedTextureFaceArray;
         private Texture2D _generatedSphericalTexture2DFromFaceArray;
         private TextureCube _textureCubeEnviroment;
@@ -43,6 +44,7 @@ namespace CubeMapHdrConversionDx
         public Rectangle r_face2_Bottom;
         public Rectangle r_generatedSphericalTexture2DFromCube;
         public Rectangle r_generatedSphericalTexture2DFromFaceArray;
+        public Rectangle r_generatedSphericalTexture2DFromSphericalTexture2D;
 
         Primitive2dQuadBuffer scrQuads = new Primitive2dQuadBuffer();
 
@@ -180,6 +182,9 @@ namespace CubeMapHdrConversionDx
                 // a spherical map
                 _generatedSphericalTexture2DFromFaceArray = TextureTypeConverter.ConvertTexture2DArrayToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _generatedTextureFaceArray, false, true, 256);
 
+                // spherical to spherical ...
+                _generatedSphericalTexture2DFromSphericalTexture2D = TextureTypeConverter.ConvertSphericalTexture2DToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _sphericalTexture2DEnviromentalMap, false, true, 256);
+
                 // cubemap to...
                 // to spherical map
                 _generatedSphericalTexture2DFromCube = TextureTypeConverter.ConvertTextureCubeToSphericalTexture2D(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
@@ -207,6 +212,7 @@ namespace CubeMapHdrConversionDx
             r_generatedSphericalTexture2DFromCube = new Rectangle(xoffset, 0, 200, 100);
             xoffset += 220;
             r_generatedSphericalTexture2DFromFaceArray = new Rectangle(xoffset, 0, 200, 100);
+            r_generatedSphericalTexture2DFromSphericalTexture2D = new Rectangle(xoffset, 105, 200, 100);
 
             float depth = 0;
             if (_cameraCinematic.IsPerspectiveStyled)
@@ -221,6 +227,7 @@ namespace CubeMapHdrConversionDx
             scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_face2_Bottom, depth, _cameraCinematic.IsPerspectiveStyled);
             scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_generatedSphericalTexture2DFromCube, depth, _cameraCinematic.IsPerspectiveStyled);
             scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_generatedSphericalTexture2DFromFaceArray, depth, _cameraCinematic.IsPerspectiveStyled);
+            scrQuads.AddVertexRectangleToBuffer(GraphicsDevice, r_generatedSphericalTexture2DFromSphericalTexture2D, depth, _cameraCinematic.IsPerspectiveStyled);
         }
 
         protected override void Update(GameTime gameTime)
@@ -279,10 +286,10 @@ namespace CubeMapHdrConversionDx
             _cameraCinematic.Update(_targetLookAt, _useDemoWaypoints, gameTime);
 
             msg =
-            $" Camera IsSpriteBatchStyled {_cameraCinematic.IsSpriteBatchStyled}" +
             $"\n Camera.World.Translation: \n  { _cameraCinematic.World.Translation.X.ToString("N3") } { _cameraCinematic.World.Translation.Y.ToString("N3") } { _cameraCinematic.World.Translation.Z.ToString("N3") }" +
             $"\n Camera.Forward: \n  { _cameraCinematic.Forward.X.ToString("N3") } { _cameraCinematic.Forward.Y.ToString("N3") } { _cameraCinematic.Forward.Z.ToString("N3") }" + 
             $"\n Up: \n { _cameraCinematic.Up.X.ToString("N3") } { _cameraCinematic.Up.Y.ToString("N3") } { _cameraCinematic.Up.Z.ToString("N3") } "+
+            $"\n Camera IsSpriteBatchStyled {_cameraCinematic.IsSpriteBatchStyled}" +
             $"\n Cullmode \n {GraphicsDevice.RasterizerState.CullMode} \n MipLevelTestValue {_mipLevelTestValue} " +
             $"\n\n KeyBoard Commands: \n F1 F2 - Display CubeMap {_currentCubeMapShown[_whichCubeMapToDraw]} \n F3 _ Change Mip Level \n F4 - Wireframe or Solid \n F5 - Set Camera to Center \n F6 - Rebuild and time EnvIlluminationMap \n SpaceBar - Camera toggle manual or waypoint \n Q thru C + arrow keys - Manual Camera Control"
             ;
@@ -335,7 +342,6 @@ namespace CubeMapHdrConversionDx
             _drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
             _drawingEffect.Parameters["View"].SetValue(_cameraCinematic.View);
             _drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position); // _cameraCinematic.Position Vector3.Zero
-            //_drawingEffect.Parameters["World"].SetValue(Matrix.CreateWorld(Vector3.Zero, _cameraCinematic.Forward, _cameraCinematic.Up));
             _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
 
             if (_whichCubeMapToDraw == 0 && _textureCubeEnviroment != null)
@@ -402,15 +408,11 @@ namespace CubeMapHdrConversionDx
 
              _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
 
-
-            
-
             //var m = _cameraCinematic.View;
             //m.Translation = new Vector3(0, 0, 0);
             //m.Forward = new Vector3(0, 0, 1);
             //m.Right = Vector3.Cross(m.Up, m.Forward);
             //m.Up = Vector3.Cross(m.Right, m.Forward);
-
 
             //_drawingEffect.CurrentTechnique = _drawingEffect.Techniques["QuadDraw"];
             //_drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
@@ -462,6 +464,13 @@ namespace CubeMapHdrConversionDx
                 _drawingEffect.Parameters["TextureA"].SetValue(_generatedSphericalTexture2DFromFaceArray);
                 scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 8, 1);
             }
+
+            xoffset += 220;
+            if (_generatedSphericalTexture2DFromFaceArray != null)
+            {
+                _drawingEffect.Parameters["TextureA"].SetValue(_generatedSphericalTexture2DFromSphericalTexture2D);
+                scrQuads.DrawQuadRangeInBuffer(GraphicsDevice, _drawingEffect, 9, 1);
+            }
         }
 
         #endregion
@@ -472,9 +481,9 @@ namespace CubeMapHdrConversionDx
         {
             _spriteBatch.Begin(SpriteSortMode.Immediate,null,null,null,null, _basicEffect,null);
 
-            SpriteBatchDrawVectorRotations(gameTime);
+            SpriteBatchDrawLoadedAndGeneratedTextures();
 
-            //SpriteBatchDrawLoadedAndGeneratedTextures();
+            SpriteBatchDrawVectorRotations(new Vector3(10, 120, 0) , gameTime);
 
             _cameraCinematic.DrawCurveThruWayPointsWithSpriteBatch(1.5f, new Vector3(GraphicsDevice.Viewport.Bounds.Right - 100, 1, GraphicsDevice.Viewport.Bounds.Bottom - 100), 1, gameTime);
 
@@ -483,24 +492,23 @@ namespace CubeMapHdrConversionDx
             _spriteBatch.End();
         }
 
-        public void SpriteBatchDrawVectorRotations(GameTime gameTime)
+        public void SpriteBatchDrawVectorRotations(Vector3 offset, GameTime gameTime)
         {
             Vector3 normal = new Vector3(1, 1, 1);
             normal.Normalize();
             var vectorPosition = normal * 100;
-            Vector3 offset = new Vector3(100, 100, 0);
             vectorPosition += offset;
             DrawHelpers.DrawCrossHair(offset.ToVector2(), 10, Color.White);
-            DrawHelpers.DrawBasicLine(offset.ToVector2(), vectorPosition.ToVector2(), 1 ,Color.White);
+            DrawHelpers.DrawBasicLine(offset.ToVector2(), vectorPosition.ToVector2(), 1, Color.White);
 
-            var yrot= Matrix.CreateRotationY(.4f);
+            var yrot = Matrix.CreateRotationY(.4f);
             var normal2 = Vector3.Transform(normal, yrot);
             var vectorPosition2 = normal2 * 100;
             vectorPosition2 += offset;
             DrawHelpers.DrawCrossHair(offset.ToVector2(), 10, Color.Yellow);
             DrawHelpers.DrawBasicLine(offset.ToVector2(), vectorPosition2.ToVector2(), 1, Color.Yellow);
 
-            var radians = elapsedSecond * 3.14159265358f*2f;
+            var radians = elapsedSecond * 3.14159265358f * 2f;
             var aarot = Matrix.CreateFromAxisAngle(normal, radians);
             var normal3 = Vector3.Transform(normal2, aarot);
             var vectorPosition3 = normal3 * 100;
@@ -512,45 +520,53 @@ namespace CubeMapHdrConversionDx
         public void SpriteBatchDrawLoadedAndGeneratedTextures()
         {
             int xoffset = 0;
+            int xoffsetText = 10;
+            int yoffsetText = 50;
             Color textColor = Color.White;
             if (_sphericalTexture2DEnviromentalMap != null)
             {
                 _spriteBatch.Draw(_sphericalTexture2DEnviromentalMap, new Rectangle(xoffset, 0, 200, 100), Color.White);
-                _spriteBatch.DrawString(_font, $"Loaded SphericalTexture2D \n format {_initialLoadedFormat}", new Vector2(xoffset, 10), textColor);
+                _spriteBatch.DrawString(_font, $"Loaded Spherical2D \n format {_initialLoadedFormat}", new Vector2(xoffsetText + xoffset, yoffsetText + 10), textColor);
             }
 
             xoffset += 120;
             if (_generatedTextureFaceArray != null)
             {
                 _spriteBatch.Draw(_generatedTextureFaceArray[4], new Rectangle(xoffset + 0, 105, 95, 95), Color.White);
-                _spriteBatch.DrawString(_font, "face Left", new Vector2(xoffset + 0, 105), textColor);
                 _spriteBatch.Draw(_generatedTextureFaceArray[0], new Rectangle(xoffset + 100, 105, 95, 95), Color.White);
-                _spriteBatch.DrawString(_font, "face Forward", new Vector2(xoffset + 100, 105), textColor);
                 _spriteBatch.Draw(_generatedTextureFaceArray[5], new Rectangle(xoffset + 200, 105, 95, 95), Color.White);
-                _spriteBatch.DrawString(_font, "face Right", new Vector2(xoffset + 200, 105), textColor);
                 _spriteBatch.Draw(_generatedTextureFaceArray[1], new Rectangle(xoffset + 300, 105, 95, 95), Color.White);
-                _spriteBatch.DrawString(_font, "face Back", new Vector2(xoffset + 300, 105), textColor);
                 _spriteBatch.Draw(_generatedTextureFaceArray[2], new Rectangle(xoffset + 100, 5, 95, 95), Color.White);
-                _spriteBatch.DrawString(_font, "face Top", new Vector2(xoffset + 100, 5), textColor);
                 _spriteBatch.Draw(_generatedTextureFaceArray[3], new Rectangle(xoffset + 100, 205, 95, 95), Color.White);
-                _spriteBatch.DrawString(_font, "face Bottom", new Vector2(xoffset + 100, 205), textColor);
+
+                _spriteBatch.DrawString(_font, "Left", new Vector2(xoffsetText + xoffset + 0, yoffsetText + 100), textColor);
+                _spriteBatch.DrawString(_font, "Forward", new Vector2(xoffsetText + xoffset + 100, yoffsetText + 110), textColor);
+                _spriteBatch.DrawString(_font, "Right", new Vector2(xoffsetText + xoffset + 200, yoffsetText + 110), textColor);
+                _spriteBatch.DrawString(_font, "Back", new Vector2(xoffsetText + xoffset + 300, yoffsetText + 110), textColor);
+                _spriteBatch.DrawString(_font, "Top", new Vector2(xoffsetText + xoffset + 100, yoffsetText + 10), textColor);
+                _spriteBatch.DrawString(_font, "Bottom", new Vector2(xoffsetText + xoffset + 100, yoffsetText + 210), textColor);
             }
 
             xoffset += 220;
             if (_generatedSphericalTexture2DFromCube != null)
             {
                 _spriteBatch.Draw(_generatedSphericalTexture2DFromCube, new Rectangle(xoffset, 0, 200, 100), Color.White);
-                _spriteBatch.DrawString(_font, "SphericalTexture2D \nFromCube", new Vector2(xoffset + 0, 10), textColor);
+                _spriteBatch.DrawString(_font, "Spherical2D \nFromCube", new Vector2(xoffsetText + xoffset + 0, yoffsetText + 10), textColor);
             }
 
             xoffset += 220;
             if (_generatedSphericalTexture2DFromFaceArray != null)
             {
                 _spriteBatch.Draw(_generatedSphericalTexture2DFromFaceArray, new Rectangle(xoffset, 0, 200, 100), Color.White);
-                _spriteBatch.DrawString(_font, "SphericalTexture2D \nFromFaceArray", new Vector2(xoffset, 10), textColor);
+                _spriteBatch.DrawString(_font, "Spherical2D \nFromFaceArray", new Vector2(xoffsetText + xoffset, yoffsetText + 10), textColor);
+            }
+
+            if (_generatedSphericalTexture2DFromFaceArray != null)
+            {
+                _spriteBatch.Draw(_generatedSphericalTexture2DFromSphericalTexture2D, new Rectangle(xoffset, 105, 200, 100), Color.White);
+                _spriteBatch.DrawString(_font, "Spherical2D \nFromSpherical2D", new Vector2(xoffsetText + xoffset, yoffsetText + 110), textColor);
             }
         }
-
 
         #endregion
 

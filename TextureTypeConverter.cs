@@ -13,6 +13,16 @@ namespace Microsoft.Xna.Framework
     {
         private static PrimitiveScreenQuad screenQuad = new PrimitiveScreenQuad(false, 1);
 
+        public static Texture2D ConvertSphericalTexture2DToSphericalTexture2D(GraphicsDevice gd, Effect _textureCubeBuildEffect, Texture2D source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
+        {
+            var pixelformat = SurfaceFormat.Color;
+            if (useHdrFormat)
+                pixelformat = SurfaceFormat.Vector4;
+            Texture2D destinationMap = new Texture2D(gd, sizeSquarePerFace, sizeSquarePerFace / 2, generateMips, pixelformat);
+            RenderSphericalTexture2DToSphericalTexture2D(gd, _textureCubeBuildEffect, "SphericalToIlluminationSpherical", source, ref destinationMap, generateMips, pixelformat, sizeSquarePerFace);
+            return destinationMap;
+        }
+
         public static TextureCube ConvertSphericalTexture2DToTextureCube(GraphicsDevice gd, Effect _textureCubeBuildEffect, Texture2D source, bool generateMips, bool useHdrFormat, int sizeSquarePerFace)
         {
             var pixelformat = SurfaceFormat.Color;
@@ -100,6 +110,23 @@ namespace Microsoft.Xna.Framework
         //
 
         #region private methods
+
+        private static void RenderSphericalTexture2DToSphericalTexture2D(GraphicsDevice gd, Effect _hdrEffect, string Technique, Texture2D sourceTextureSpherical, ref Texture2D textureDestinationMap, bool generateMips, SurfaceFormat pixelformat, int sizeSquarePerFace)
+        {
+            gd.RasterizerState = RasterizerState.CullNone;
+            _hdrEffect.CurrentTechnique = _hdrEffect.Techniques[Technique];
+            _hdrEffect.Parameters["Texture"].SetValue(sourceTextureSpherical);
+            var renderTarget2D = new RenderTarget2D(gd, sizeSquarePerFace, sizeSquarePerFace / 2, generateMips, pixelformat, DepthFormat.None);
+            gd.SetRenderTarget(renderTarget2D);
+            foreach (EffectPass pass in _hdrEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                gd.DrawUserPrimitives(PrimitiveType.TriangleList, screenQuad.vertices, 0, 2);
+            }
+            //var textureSpherical = new RenderTarget2D(gd, sizeSquarePerFace, sizeSquarePerFace, generateMips, pixelformat, DepthFormat.None);
+            textureDestinationMap = renderTarget2D; // set the render to the specified texture.
+            gd.SetRenderTarget(null);
+        }
 
         /// <summary>
         /// Renders the hdr texture to a TextureCube.
