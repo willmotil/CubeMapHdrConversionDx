@@ -350,6 +350,8 @@ namespace Microsoft.Xna.Framework
 
         public static void SaveTexture2D(string path, Texture2D t)
         {
+            //var dirpath = Path.GetDirectoryName(path);
+            //Directory.CreateDirectory(dirpath);
             using (System.IO.Stream fs = System.IO.File.OpenWrite(path))
             {
                 t.SaveAsPng(fs, t.Width, t.Height);

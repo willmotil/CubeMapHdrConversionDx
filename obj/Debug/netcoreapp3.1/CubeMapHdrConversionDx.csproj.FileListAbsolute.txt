@@ -74,7 +74,6 @@ C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMap
 C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.dll
 C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.pdb
 C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.genruntimeconfig.cache
-C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.csprojAssemblyReference.cache
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content\schadowplatz_2k.xnb
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content\hdr_colorful_studio_2k.xnb
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content\hdr_royal_esplanade_2k.xnb
@@ -116,3 +115,5 @@ C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\C
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.pdb
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.genruntimeconfig.cache
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.csprojAssemblyReference.cache
+C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content\hdr_royal_esplanade_2k.xnb
+C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content\schadowplatz_2k.xnb
