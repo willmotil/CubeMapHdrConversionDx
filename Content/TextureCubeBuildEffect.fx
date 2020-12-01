@@ -348,7 +348,7 @@ float4 GetCubeIrradiance(float2 pixelpos, int faceToMap)
 
     float3 normal = normalize(input.PositionNormal);
     float3 up = float3(0, -1, 0);
-    float3 right = normalize(cross(up, input.PositionNormal));
+    float3 right = normalize(cross(up, normal));
     up = cross(normal, right);
 
     //// the following values are in degrees.
@@ -377,10 +377,14 @@ float4 GetCubeIrradiance(float2 pixelpos, int faceToMap)
     // sample enviromental cubemap
         for (float theta = 0.01f; theta < hemisphereMaxAngleTheta; theta += stepTheta) // y rot
         {
-            float3 temp = normalize(rotatePointAboutYaxis(normal, theta));
+            stepPhi = 7.0f;
+            //float3 temp = normalize(rotatePointAboutYaxis(normal, theta));
             for (float phi = 0.01f; phi < 6.283f; phi += stepPhi) // z rot.
             {
                  // calculate the new vector around the normal to sample rotationally.
+
+                // OK To do i believe that this is actually a Y axis rotation rotating to the left and right which duhhhh is why im actually having all these problems its actually side to side rotation not a up down one.
+
                  float3 temp = cos(phi) * right + sin(phi) * up;
                  float4 sampleVector = float4(cos(theta) * normal + sin(theta) * temp, mipSampleLevel);
                  sampleVector.rgb = normalize(sampleVector.rgb);
