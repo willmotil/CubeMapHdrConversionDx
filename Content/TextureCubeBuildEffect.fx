@@ -98,22 +98,22 @@ float4x4 CreateFromAxisAngle(float3 axis, float angle)
     float numXZ = x * z;
     float numYZ = y * z;
     float4x4 result = float4x4
-        (
+    (
         numXX + (cosTheta * (1.0f - numXX)),
         (numXY - (cosTheta * numXY)) + (sinTheta * z),
         (numXZ - (cosTheta * numXZ)) - (sinTheta * y),
-        0,
+        0.0f,
         (numXY - (cosTheta * numXY)) - (sinTheta * z),
         numYY + (cosTheta * (1.0f - numYY)),
         (numYZ - (cosTheta * numYZ)) + (sinTheta * x),
-        0,
+        0.0f,
         (numXZ - (cosTheta * numXZ)) + (sinTheta * y),
         (numYZ - (cosTheta * numYZ)) - (sinTheta * x),
         numZZ + (cosTheta * (1.0f - numZZ)),
-        0,
-        0,
-        0,
-        0,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
         1.0f
     );
     return result;
@@ -336,20 +336,25 @@ float4 GetCubeIrradiance(float2 pixelpos, int faceToMap)
 {
     FaceStruct input = PosUvFaceToNormal(pixelpos, faceToMap);
 
-    //float3 normal = input.PositionNormal;
+    //float3 normal = normalize(input.PositionNormal);
     //float3 up = input.FaceUp;
     //float3 right = normalize(cross(up, input.FaceNormal));
     //up = cross(input.FaceNormal, right);
 
-    //float3 normal = input.PositionNormal;
-    //float3 up = float3(0, -1, 0);
+    //float3 normal = normalize(input.PositionNormal);
+    //float3 up = input.FaceUp;
     //float3 right = normalize(cross(up, input.PositionNormal));
     //up = cross(input.PositionNormal, right);
 
     float3 normal = normalize(input.PositionNormal);
-    float3 up = input.FaceUp;
+    float3 up = float3(0, -1, 0);
     float3 right = normalize(cross(up, input.PositionNormal));
-    up = cross(input.PositionNormal, right);
+    up = cross(normal, right);
+
+    //// the following values are in degrees.
+    //float numberOfSamplesHemisphere = 8.0f;//10.0f; // we want the smallest amount with good quality
+    //float numberOfSamplesAround = 20.0f; //4.0f; // same as above
+    //float hemisphereMaxAngle = 40.0f;//10.0f; // we really want 90
 
     // the following values are in degrees.
     float numberOfSamplesHemisphere = 10.0f; // we want the smallest amount with good quality
@@ -375,16 +380,18 @@ float4 GetCubeIrradiance(float2 pixelpos, int faceToMap)
             float3 temp = normalize(rotatePointAboutYaxis(normal, theta));
             for (float phi = 0.01f; phi < 6.283f; phi += stepPhi) // z rot.
             {
-                //// calculate the new vector around the normal to sample rotationally.
-                // float3 temp = cos(phi) * right + sin(phi) * up;
-                // float4 sampleVector = float4(cos(theta) * normal + sin(theta) * temp, mipSampleLevel);
-                // sampleVector.rgb = normalize(sampleVector.rgb);
-                // float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
+                 // calculate the new vector around the normal to sample rotationally.
+                 float3 temp = cos(phi) * right + sin(phi) * up;
+                 float4 sampleVector = float4(cos(theta) * normal + sin(theta) * temp, mipSampleLevel);
+                 sampleVector.rgb = normalize(sampleVector.rgb);
+                 float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
 
-                float4x4 zrot = CreateFromAxisAngle(normal, phi);
-                float4 sampleVector = mul(float4(temp, 1.0f), zrot);
-                sampleVector.w = mipSampleLevel;
-                float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
+                //// this is wrong
+                //float4x4 zrot = CreateFromAxisAngle(normal, phi);
+                //float4 sampleVector = mul(float4(temp, 1.0f), zrot);
+                //sampleVector.rgb = normalize(sampleVector.rgb);
+                //sampleVector.w = mipSampleLevel;
+                //float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
 
                 //// some possible weighting functions.
 
@@ -394,11 +401,11 @@ float4 GetCubeIrradiance(float2 pixelpos, int faceToMap)
 
                 // accumulate and weigh the geometrical sampled pattern ... here is the hard part.
 
-                accumulatedColor += sampledColor;
-                totalWeight++;
+                //accumulatedColor += sampledColor;
+                //totalWeight++;
 
-                //accumulatedColor += sampledColor * NdotS;
-                //totalWeight += NdotS;
+                accumulatedColor += sampledColor * NdotS;
+                totalWeight += NdotS;
 
                 //accumulatedColor += sampledColor * (cos(theta) * sin(theta));
                 //totalWeight += cos(theta) * sin(theta);
@@ -418,6 +425,99 @@ float4 GetCubeIrradiance(float2 pixelpos, int faceToMap)
 
     return final;
 }
+
+
+// a good seem however the rotation is system polar singularity buged
+////// http://www.codinglabs.net/article_physically_based_rendering.aspx
+//////
+////// F  needs work.
+//////
+////float4 GetCubeIrradiance(float2 pixelpos, int faceToMap)
+////{
+////    FaceStruct input = PosUvFaceToNormal(pixelpos, faceToMap);
+////
+////    //float3 normal = input.PositionNormal;
+////    //float3 up = input.FaceUp;
+////    //float3 right = normalize(cross(up, input.FaceNormal));
+////    //up = cross(input.FaceNormal, right);
+////
+////    float3 normal = normalize(input.PositionNormal);
+////    float3 up = float3(0, -1, 0);
+////    float3 right = normalize(cross(up, input.PositionNormal));
+////    up = cross(normal, right);
+////
+////    //float3 normal = normalize(input.PositionNormal);
+////    //float3 up = input.FaceUp;
+////    //float3 right = normalize(cross(up, input.PositionNormal));
+////    //up = cross(input.PositionNormal, right);
+////
+////    // the following values are in degrees.
+////    float numberOfSamplesHemisphere = 10.0f; // we want the smallest amount with good quality
+////    float numberOfSamplesAround = 4.0f; // same as above
+////    float hemisphereMaxAngle = 10.0f; // we really want 90
+////
+////    float minimumAdjustment = 2.1f; // this is to help control the sampling geometry.
+////    float mipSampleLevel = 0; // this is the sample or mipmap level from the enviromental map we take the current pixel from.
+////
+////    // calculated from the above for adjusting the loop geometry pattern.
+////    float hemisphereMaxAngleTheta = hemisphereMaxAngle * ToRadians; // computed
+////    float stepTheta = (hemisphereMaxAngleTheta / numberOfSamplesHemisphere);// *ToRadians; // -0.05f;
+////    float stepPhi = (360.0f / numberOfSamplesAround) * ToRadians; // -0.05f;
+////
+////    float3 accumulatedColor = float3(0, 0, 0);
+////    float totalWeight = 0;
+////    float3 averagedColor = float3(0, 0, 0);
+////    float totalSampleCount = 0;
+////
+////    // sample enviromental cubemap
+////    for (float theta = 0.01f; theta < hemisphereMaxAngleTheta; theta += stepTheta) // y rot
+////    {
+////        float3 temp = normalize(rotatePointAboutYaxis(normal, theta));
+////        for (float phi = 0.01f; phi < 6.283f; phi += stepPhi) // z rot.
+////        {
+////            // calculate the new vector around the normal to sample rotationally.
+////            float3 temp = cos(phi) * right + sin(phi) * up;
+////            float4 sampleVector = float4(cos(theta) * normal + sin(theta) * temp, mipSampleLevel);
+////            sampleVector.rgb = normalize(sampleVector.rgb);
+////            float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
+////
+////            //float4x4 zrot = CreateFromAxisAngle(normal, phi);
+////            //float4 sampleVector = mul(float4(temp, 1.0f), zrot);
+////            //sampleVector.w = mipSampleLevel;
+////            //float3 sampledColor = texCUBElod(CubeMapSampler, sampleVector).rgb;
+////
+////            //// some possible weighting functions.
+////
+////             //float avg = (sampledColor.r + sampledColor.b + sampledColor.g) * 0.33333f;
+////            float NdotS = saturate(dot(normal, sampleVector.rgb));
+////            float phiMuliplier = 1.0f - (phi / (5.283f + 1.0f));
+////
+////            // accumulate and weigh the geometrical sampled pattern ... here is the hard part.
+////
+////            //accumulatedColor += sampledColor;
+////            //totalWeight++;
+////
+////            accumulatedColor += sampledColor * NdotS;
+////            totalWeight += NdotS;
+////
+////            //accumulatedColor += sampledColor * (cos(theta) * sin(theta));
+////            //totalWeight += cos(theta) * sin(theta);
+////
+////            //accumulatedColor += sampledColor * phiMuliplier;
+////            //totalWeight += phiMuliplier;
+////        }
+////
+////    }
+////    //float4 final = float4(PI * accumulatedColor / totalWeight, 1.0f );
+////    float4 final = float4(accumulatedColor / totalWeight, 1.0f);
+////
+////    //// overlaid visualization.
+////    //float3 directColor = texCUBElod(CubeMapSampler, float4(normal, 0)).rgb;
+////    //directColor.rgb = (directColor.r + directColor.g + directColor.b) / 3;
+////    //final.rgb = final.rgb * 0.90f + directColor.brg * 0.10f;
+////
+////    return final;
+////}
 
 //____________________________________
 // shaders and technique SphericalToCubeMap
