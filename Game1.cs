@@ -516,8 +516,9 @@ namespace CubeMapHdrConversionDx
             DrawHelpers.DrawCrossHair(offset.ToVector2(), 10, Color.White);
 
             var vectorPositionForward = normal * 100;
-            var vectorPositionUp = new Vector3(vectorPositionForward.Z, vectorPositionForward.X, vectorPositionForward.Y) + offset;
-            var vectorPositionRight = new Vector3(vectorPositionForward.Y, vectorPositionForward.Z, vectorPositionForward.X) + offset;
+
+            var vectorPositionUp = new Vector3(vectorPositionForward.Z, vectorPositionForward.Y, vectorPositionForward.X) + offset;
+            var vectorPositionRight = new Vector3(vectorPositionForward.Y, vectorPositionForward.X, vectorPositionForward.Z) + offset;
             
             vectorPositionForward += offset;
             DrawHelpers.DrawBasicLine(offset.ToVector2(), vectorPositionForward.ToVector2(), 1, Color.Green);
@@ -525,7 +526,7 @@ namespace CubeMapHdrConversionDx
             DrawHelpers.DrawBasicLine(offset.ToVector2(), vectorPositionUp.ToVector2(), 1, Color.Red);
             DrawHelpers.DrawBasicLine(offset.ToVector2(), vectorPositionRight.ToVector2(), 1, Color.Blue);
 
-            var yrot = Matrix.CreateRotationY(.4f);
+            var yrot = Matrix.CreateRotationX(.4f);
             var normal2 = Vector3.Transform(normal, yrot);
             var vectorPosition2 = normal2 * 100;
             vectorPosition2 += offset;

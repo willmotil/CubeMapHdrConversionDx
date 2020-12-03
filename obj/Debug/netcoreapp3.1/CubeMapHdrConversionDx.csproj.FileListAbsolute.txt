@@ -116,3 +116,4 @@ C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\C
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.dll
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.pdb
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.genruntimeconfig.cache
+C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.csprojAssemblyReference.cache
