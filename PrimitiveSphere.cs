@@ -28,9 +28,6 @@ namespace Microsoft.Xna.Framework
         public static Matrix matrixPositiveY = Matrix.CreateWorld(Vector3.Zero, new Vector3(0, 1.0f, 0), Vector3.Backward);
         public static Matrix matrixNegativeY = Matrix.CreateWorld(Vector3.Zero, new Vector3(0, -1.0f, 0), Vector3.Forward);
 
-        public List<VertexPositionNormalTexture> cubesFaceMeshes = new List<VertexPositionNormalTexture>();
-        public List<int> cubeFaceMeshIndexes = new List<int>();
-
         public VertexPositionNormalTexture[] cubesFaces;
         public int[] cubesFacesIndices;
 
@@ -45,6 +42,9 @@ namespace Microsoft.Xna.Framework
 
         public void CreatePrimitiveSphere(int subdivisionWidth, int subdividsionHeight, float scale, bool clockwise, bool invert, bool directionalFaces)
         {
+            List<VertexPositionNormalTexture> cubesFaceMeshes = new List<VertexPositionNormalTexture>();
+            List<int> cubeFaceMeshIndexes = new List<int>();
+
             if (subdivisionWidth < 2)
                 subdivisionWidth = 2;
             if (subdividsionHeight < 2)
@@ -75,12 +75,9 @@ namespace Microsoft.Xna.Framework
 
                         float L = Interpolate(left, right, perL);
                         float T = Interpolate(top, bottom, perT);
-
                         var p0 = new Vector3(L * scale, T * scale, depth);
-
                         var uv0 = new Vector2(perL, perT);
-
-                        var v0 = GetVertice(p0, faceIndex, directionalFaces, depth, uv0); // p0
+                        var v0 = GetVertice(p0, faceIndex, directionalFaces, depth, uv0);
 
                         cubesFaceMeshes.Add(v0);
                         v += 1;
@@ -91,7 +88,7 @@ namespace Microsoft.Xna.Framework
                 {
                     for (int x = 0; x < subdivisionWidth - 1; x++)
                     {
-                        int i = y * subdivisionWidth + x;
+                        i = y * subdivisionWidth + x;
                         cubeFaceMeshIndexes.Add(i);
                         cubeFaceMeshIndexes.Add(i + subdivisionWidth);
                         cubeFaceMeshIndexes.Add(i + 1 + subdivisionWidth);
@@ -102,100 +99,10 @@ namespace Microsoft.Xna.Framework
                         i += +6;
                     }
                 }
-
-                //i += +6;
-                // t0
-                //var index0 = i + 0;
-                //var index1 = i + 1;
-                //var index2 = i + 2;
-                //// t1
-                //var index3 = i + 2;
-                //var index4 = i + 3;
-                //var index5 = i + 0;
             }
+            cubesFaces = cubesFaceMeshes.ToArray();
+            cubesFacesIndices = cubeFaceMeshIndexes.ToArray();
         }
-
-        //public void CreatePrimitiveSphere(int subdivisionWidth, int subdividsionHeight, float scale, bool clockwise, bool invert, bool directionalFaces)
-        //{
-        //    if (subdivisionWidth < 2)
-        //        subdivisionWidth = 2;
-        //    if (subdividsionHeight < 2)
-        //        subdividsionHeight = 2;
-
-        //    float depth = -scale;
-        //    if (invert)
-        //        depth = -depth;
-
-        //    cubesFaces = new VertexPositionNormalTexture[36];
-
-        //    float left = -1f;
-        //    float right = +1f;
-        //    float top = -1f;
-        //    float bottom = +1f;
-
-        //    int v = 0;
-        //    int i = 0;
-        //    for (int faceIndex = 0; faceIndex < 6; faceIndex++)
-        //    {
-        //        for (int x = 1; x < subdivisionWidth; x++)
-        //        {
-        //            float perL = (x - 1) / (subdivisionWidth - 1);
-        //            float perR = x / (subdivisionWidth - 1);
-        //            for (int y = 1; y < subdividsionHeight; y++)
-        //            {
-        //                float perT = (y - 1) / (subdividsionHeight - 1);
-        //                float perB = y / (subdividsionHeight - 1);
-
-        //                float L = Interpolate(left, right, perL);
-        //                float R = Interpolate(left, right, perR);
-        //                float T = Interpolate(top, bottom, perT);
-        //                float B = Interpolate(top, bottom, perB);
-
-        //                var p0 = new Vector3(L * scale, T * scale, depth);
-        //                var p1 = new Vector3(L * scale, B * scale, depth);
-        //                var p2 = new Vector3(R * scale, B * scale, depth);
-        //                var p3 = new Vector3(R * scale, T * scale, depth);
-
-        //                var uv0 = new Vector2(perL, perT);
-        //                var uv1 = new Vector2(perL, perB);
-        //                var uv2 = new Vector2(perR, perB);
-        //                var uv3 = new Vector2(perR, perT);
-
-        //                var v0 = GetVertice(p0, faceIndex, directionalFaces, depth, uv0); // p0
-        //                var v1 = GetVertice(p1, faceIndex, directionalFaces, depth, uv1); // p1
-        //                var v2 = GetVertice(p2, faceIndex, directionalFaces, depth, uv2); // p2
-        //                var v3 = GetVertice(p3, faceIndex, directionalFaces, depth, uv3); // p3
-
-        //                // t0
-        //                var index0 = i + 0;
-        //                var index1 = i + 1;
-        //                var index2 = i + 2;
-        //                // t1
-        //                var index3 = i + 2;
-        //                var index4 = i + 3;
-        //                var index5 = i + 0;
-
-        //                v += 4;
-        //                i += +6;
-        //            }
-        //        }
-        //    }
-        //}
-
-        //var r = new Rectangle(-1, -1, 2, 2);
-        //var rp0 = new Vector3(r.Left * scale, r.Top * scale, depth);
-        //var rp1 = new Vector3(r.Left * scale, r.Bottom * scale, depth);
-        //var rp2 = new Vector3(r.Right * scale, r.Bottom * scale, depth);
-        //var rp3 = new Vector3(r.Right * scale, r.Top * scale, depth);
-        // ccw
-        //var v0 = GetVertice(rp0, faceIndex, directionalFaces, depth, new Vector2(0f, 0f)); // p0
-        //var v1 = GetVertice(rp1, faceIndex, directionalFaces, depth, new Vector2(0f, 1f)); // p1
-        //var v2 = GetVertice(rp2, faceIndex, directionalFaces, depth, new Vector2(1f, 1f)); // p2                                                                                                                                             
-        //var v3 = GetVertice(rp3, faceIndex, directionalFaces, depth, new Vector2(1f, 1f)); // p3
-        //var index0 = i + 0;
-        //var index1 = i + 1;
-        //var index2 = i + 2;
-        //var index3 = i + 3;
 
         private float Interpolate(float A, float B, float t)
         {
