@@ -54,12 +54,15 @@ namespace CubeMapHdrConversionDx
         private PrimitiveCube skyCube;
         private PrimitiveCube[] cubes = new PrimitiveCube[5];
 
+        private PrimitiveSphere skySphere;
+
         private float _mipLevelTestValue = 0;
         private int _whichCubeMapToDraw = 0; // enviromentalMapFromHdr =1,  enviromentalDiffuseIlluminationMap = 2, 
         private SurfaceFormat _initialLoadedFormat;
 
         private bool _wireframe = false;
         private RasterizerState rs_wireframe = new RasterizerState() { FillMode = FillMode.WireFrame };
+        private RasterizerState rs_solid = new RasterizerState() { FillMode = FillMode.Solid };
 
         //private DemoCamera _cameraSpritebatch;
         private DemoCamera _cameraCinematic;
@@ -72,8 +75,6 @@ namespace CubeMapHdrConversionDx
         //private Matrix sbpWorld;
 
         #endregion
-
-
 
 
         //____________________________________________
@@ -116,7 +117,7 @@ namespace CubeMapHdrConversionDx
 
             SetupTheCameras();
             CreateRectanglePositionsAndAddThemToQuads();
-            CreatePrimitiveSceneCubes();
+            CreatePrimitiveSceneCubesAndSpheres();
             CreateSphericalArraysAndCubeMapTextures();
         }
 
@@ -154,8 +155,10 @@ namespace CubeMapHdrConversionDx
             _basicEffect.Projection = Matrix.CreateOrthographicOffCenter(0, device.Viewport.Width, -device.Viewport.Height, 0, forwardDepthDirection * 0, forwardDepthDirection * 1f);
         }
 
-        public void CreatePrimitiveSceneCubes()
+        public void CreatePrimitiveSceneCubesAndSpheres()
         {
+            skySphere = new PrimitiveSphere( 2, 2, 1f, true, false, false);
+
             skyCube = new PrimitiveCube(1000, true, false, true);
             for (int i = 0; i < 5; i++)
                 cubes[i] = new PrimitiveCube(1, false, false, true);
@@ -194,7 +197,6 @@ namespace CubeMapHdrConversionDx
                 // to cube                                     CubemapToCubemap  DiffuseIlluminationCubeMap
                 //_textureCubeIblDiffuseIllumination = TextureTypeConverter.ConvertTextureCubeToTextureCube(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
                 _textureCubeIblDiffuseIllumination = TextureTypeConverter.ConvertTextureCubeToIrradianceMap(GraphicsDevice, _textureCubeBuildEffect, _textureCubeEnviroment, false, true, 512);
-
             }
         }
 
@@ -338,6 +340,12 @@ namespace CubeMapHdrConversionDx
             DrawPrimitiveSceneCubes(gameTime);
 
             PrimitiveDrawLoadedAndGeneratedTextures();
+
+
+            GraphicsDevice.RasterizerState = rs_wireframe;
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            skySphere.DrawPrimitiveSphere(GraphicsDevice, _drawingEffect, _textureCubeEnviroment);
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         }
 
         #region draw primitive scene camera geometry.
@@ -415,7 +423,7 @@ namespace CubeMapHdrConversionDx
             _drawingEffect.Parameters["View"].SetValue(_cameraCinematic.View);
             _drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position); // _camera.Position // Vector3.Zero
 
-             _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
+            _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
 
             //var m = _cameraCinematic.View;
             //m.Translation = new Vector3(0, 0, 0);
@@ -488,7 +496,7 @@ namespace CubeMapHdrConversionDx
 
         public void DrawSpriteBatches(GameTime gameTime)
         {
-            _spriteBatch.Begin(SpriteSortMode.Immediate,null,null,null,null, _basicEffect,null);
+            _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, _basicEffect, null);
 
             SpriteBatchDrawLoadedAndGeneratedTextures();
 
@@ -504,9 +512,9 @@ namespace CubeMapHdrConversionDx
         //https://automaticaddison.com/how-to-convert-a-quaternion-to-a-rotation-matrix/
         //https://personal.utdallas.edu/~sxb027100/dock/quaternion.html
 
+
         public void SpriteBatchDrawVectorRotations(Vector3 offset, GameTime gameTime)
         {
-
             var radiansX = elapsedTenSecond * 3.14159265358f * 2f;
             var rotMatx = Matrix.CreateRotationX(radiansX);
             var normal = Vector3.Normalize(new Vector3(1f, .3f, 1f));
@@ -594,6 +602,8 @@ namespace CubeMapHdrConversionDx
         }
 
         #endregion
+
+
 
         #region helper functions
 

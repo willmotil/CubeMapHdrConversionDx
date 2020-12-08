@@ -28,13 +28,14 @@ namespace Microsoft.Xna.Framework
         public static Matrix matrixPositiveY = Matrix.CreateWorld(Vector3.Zero, new Vector3(0, 1.0f, 0), Vector3.Backward);
         public static Matrix matrixNegativeY = Matrix.CreateWorld(Vector3.Zero, new Vector3(0, -1.0f, 0), Vector3.Forward);
 
-        public VertexPositionNormalTexture[] cubesFaces;
+        public VertexPositionNormalTexture[] cubesFaceVertices;
         public int[] cubesFacesIndices;
 
         public PrimitiveSphere()
         {
             CreatePrimitiveSphere(0, 0, 1f, false, true, true);
         }
+
         public PrimitiveSphere(int subdivisionWidth, int subdividsionHeight ,float scale, bool clockwise, bool invert, bool directionalFaces)
         {
             CreatePrimitiveSphere(subdivisionWidth, subdividsionHeight, scale, clockwise, invert, directionalFaces);
@@ -54,7 +55,7 @@ namespace Microsoft.Xna.Framework
             if (invert)
                 depth = -depth;
 
-            cubesFaces = new VertexPositionNormalTexture[36];
+            cubesFaceVertices = new VertexPositionNormalTexture[36];
 
             float left = -1f;
             float right = +1f;
@@ -88,19 +89,18 @@ namespace Microsoft.Xna.Framework
                 {
                     for (int x = 0; x < subdivisionWidth - 1; x++)
                     {
-                        i = y * subdivisionWidth + x;
                         cubeFaceMeshIndexes.Add(i);
                         cubeFaceMeshIndexes.Add(i + subdivisionWidth);
-                        cubeFaceMeshIndexes.Add(i + 1 + subdivisionWidth);
+                        cubeFaceMeshIndexes.Add(i + subdivisionWidth + 1);
 
-                        cubeFaceMeshIndexes.Add(i + 1 + subdivisionWidth);
+                        cubeFaceMeshIndexes.Add(i + subdivisionWidth + 1);
                         cubeFaceMeshIndexes.Add(i + 1);
                         cubeFaceMeshIndexes.Add(i);
-                        i += +6;
+                        i += 6;
                     }
                 }
             }
-            cubesFaces = cubesFaceMeshes.ToArray();
+            cubesFaceVertices = cubesFaceMeshes.ToArray();
             cubesFacesIndices = cubeFaceMeshIndexes.ToArray();
         }
 
@@ -111,7 +111,8 @@ namespace Microsoft.Xna.Framework
 
         private VertexPositionNormalTexture GetVertice(Vector3 v, int faceIndex, bool directionalFaces, float depth, Vector2 uv)
         {
-            return new VertexPositionNormalTexture(Vector3.Transform(v, GetWorldFaceMatrix(faceIndex)), FlatFaceOrDirectional(v, faceIndex, directionalFaces, depth), uv);
+            var v2 = Vector3.Transform(v, GetWorldFaceMatrix(faceIndex));
+            return new VertexPositionNormalTexture(v2, FlatFaceOrDirectional(v, faceIndex, directionalFaces, depth), uv);
         }
 
         private Vector3 FlatFaceOrDirectional(Vector3 v, int faceIndex, bool directionalFaces, float depth)
@@ -149,17 +150,20 @@ namespace Microsoft.Xna.Framework
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaces, cubeFaceToRender * 6, 2, VertexPositionNormalTexture.VertexDeclaration);
+                gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, cubeFaceToRender * 6, 2, VertexPositionNormalTexture.VertexDeclaration);
             }
         }
+
         public void DrawPrimitiveSphere(GraphicsDevice gd, Effect effect, TextureCube cubeTexture)
         {
             effect.Parameters["CubeMap"].SetValue(cubeTexture);
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaces, 0, 12, VertexPositionNormalTexture.VertexDeclaration);
+                //gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaces, 0, 12, VertexPositionNormalTexture.VertexDeclaration);
+                gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, 0, cubesFaceVertices.Length, cubesFacesIndices, 0, cubesFacesIndices.Length /3,  VertexPositionNormalTexture.VertexDeclaration);
             }
         }
+
     }
 }
