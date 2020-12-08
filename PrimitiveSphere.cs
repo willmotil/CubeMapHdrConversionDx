@@ -43,8 +43,8 @@ namespace Microsoft.Xna.Framework
 
         public void CreatePrimitiveSphere(int subdivisionWidth, int subdividsionHeight, float scale, bool clockwise, bool invert, bool directionalFaces)
         {
-            List<VertexPositionNormalTexture> cubesFaceMeshes = new List<VertexPositionNormalTexture>();
-            List<int> cubeFaceMeshIndexes = new List<int>();
+            List<VertexPositionNormalTexture> cubesFaceMeshLists = new List<VertexPositionNormalTexture>();
+            List<int> cubeFaceMeshIndexLists = new List<int>();
 
             if (subdivisionWidth < 2)
                 subdivisionWidth = 2;
@@ -54,8 +54,6 @@ namespace Microsoft.Xna.Framework
             float depth = -scale;
             if (invert)
                 depth = -depth;
-
-            cubesFaceVertices = new VertexPositionNormalTexture[36];
 
             float left = -1f;
             float right = +1f;
@@ -68,40 +66,59 @@ namespace Microsoft.Xna.Framework
             {
                 for (int y = 0; y < subdividsionHeight; y++)
                 {
-                    float perT = y / (subdividsionHeight - 1);
+                    float perY = y / (subdividsionHeight - 1);
                     // 
                     for (int x = 0; x < subdivisionWidth; x++)
                     {
-                        float perL = x / (subdivisionWidth - 1);
+                        float perX = x / (subdivisionWidth - 1);
 
-                        float L = Interpolate(left, right, perL);
-                        float T = Interpolate(top, bottom, perT);
-                        var p0 = new Vector3(L * scale, T * scale, depth);
-                        var uv0 = new Vector2(perL, perT);
+                        float X = Interpolate(left, right, perX);
+                        float Y = Interpolate(top, bottom, perY);
+                        if( (X ==0 && Y ==0) || X == float.NaN || Y == float.NaN || X == float.NegativeInfinity || Y == float.NegativeInfinity || X == float.PositiveInfinity || Y == float.PositiveInfinity)
+                        {
+                            System.Console.WriteLine("nan");
+                        }
+
+                        var p0 = new Vector3(X * scale, Y * scale, depth);
+                        var uv0 = new Vector2(perX, perY);
                         var v0 = GetVertice(p0, faceIndex, directionalFaces, depth, uv0);
 
-                        cubesFaceMeshes.Add(v0);
+                        cubesFaceMeshLists.Add(v0);
                         v += 1;
                     }
                 }
 
-                for (int y = 0; y < subdividsionHeight - 1; y++)
+                for (int y = 0; y < subdividsionHeight; y++)
                 {
-                    for (int x = 0; x < subdivisionWidth - 1; x++)
+                    for (int x = 0; x < subdivisionWidth; x++)
                     {
-                        cubeFaceMeshIndexes.Add(i);
-                        cubeFaceMeshIndexes.Add(i + subdivisionWidth);
-                        cubeFaceMeshIndexes.Add(i + subdivisionWidth + 1);
+                        cubeFaceMeshIndexLists.Add(i);
+                        cubeFaceMeshIndexLists.Add(i + subdivisionWidth);
+                        cubeFaceMeshIndexLists.Add(i + subdivisionWidth + 1);
 
-                        cubeFaceMeshIndexes.Add(i + subdivisionWidth + 1);
-                        cubeFaceMeshIndexes.Add(i + 1);
-                        cubeFaceMeshIndexes.Add(i);
+                        cubeFaceMeshIndexLists.Add(i + subdivisionWidth + 1);
+                        cubeFaceMeshIndexLists.Add(i + 1);
+                        cubeFaceMeshIndexLists.Add(i);
                         i += 6;
                     }
                 }
             }
-            cubesFaceVertices = cubesFaceMeshes.ToArray();
-            cubesFacesIndices = cubeFaceMeshIndexes.ToArray();
+            cubesFaceVertices = cubesFaceMeshLists.ToArray();
+            cubesFacesIndices = cubeFaceMeshIndexLists.ToArray();
+        }
+
+        public void DrawPrimitiveSphere(GraphicsDevice gd, Effect effect, TextureCube cubeTexture)
+        {
+            effect.Parameters["CubeMap"].SetValue(cubeTexture);
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                int faceOffset = 0 * 6;
+                int primCount = cubesFacesIndices.Length / 3;
+                //gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaces, 0, 12, VertexPositionNormalTexture.VertexDeclaration);
+                //gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, 0, cubesFaceVertices.Length, cubesFacesIndices, 0, cubesFacesIndices.Length /3,  VertexPositionNormalTexture.VertexDeclaration);
+                gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, 0, cubesFaceVertices.Length, cubesFacesIndices, faceOffset, primCount, VertexPositionNormalTexture.VertexDeclaration);
+            }
         }
 
         private float Interpolate(float A, float B, float t)
@@ -151,17 +168,6 @@ namespace Microsoft.Xna.Framework
             {
                 pass.Apply();
                 gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, cubeFaceToRender * 6, 2, VertexPositionNormalTexture.VertexDeclaration);
-            }
-        }
-
-        public void DrawPrimitiveSphere(GraphicsDevice gd, Effect effect, TextureCube cubeTexture)
-        {
-            effect.Parameters["CubeMap"].SetValue(cubeTexture);
-            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                //gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaces, 0, 12, VertexPositionNormalTexture.VertexDeclaration);
-                gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, 0, cubesFaceVertices.Length, cubesFacesIndices, 0, cubesFacesIndices.Length /3,  VertexPositionNormalTexture.VertexDeclaration);
             }
         }
 
