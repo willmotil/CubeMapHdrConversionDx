@@ -6,13 +6,17 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Microsoft.Xna.Framework
 {
+    // there we go or not the spacing is off needs fixed.
     //
-    // eh too tired to do this right now 
+    // 
     // todo's
+    // ensure partitions work and then displace meshes.
+    // nasa map height data.
+    //
     // make a mesh on the list per face need to pass width height
     // extending normals tangents and uv's is all par for the course no problems there.
     // however besides the parameter methods that i need to pass.
-    // i need to be able to pass image data for nasa map data i want to add that in.
+    // i need to be able to pass image data for nasa map data i want to add that in.    
     //
     // We want this to be nice and clean i put this off for like a year and didn't take the time to redo it.
     // So take a little time to ...
@@ -61,7 +65,6 @@ namespace Microsoft.Xna.Framework
             float bottom = +1f;
 
             int v = 0;
-            int i = 0;
             for (int faceIndex = 0; faceIndex < 6; faceIndex++)
             {
                 for (int y = 0; y < subdividsionHeight; y++)
@@ -74,7 +77,8 @@ namespace Microsoft.Xna.Framework
 
                         float X = Interpolate(left, right, perX);
                         float Y = Interpolate(top, bottom, perY);
-                        if( (X ==0 && Y ==0) || X == float.NaN || Y == float.NaN || X == float.NegativeInfinity || Y == float.NegativeInfinity || X == float.PositiveInfinity || Y == float.PositiveInfinity)
+
+                        if ((X == 0 && Y == 0) || X == float.NaN || Y == float.NaN || X == float.NegativeInfinity || Y == float.NegativeInfinity || X == float.PositiveInfinity || Y == float.PositiveInfinity)
                         {
                             System.Console.WriteLine("nan");
                         }
@@ -87,19 +91,45 @@ namespace Microsoft.Xna.Framework
                         v += 1;
                     }
                 }
+                System.Console.WriteLine(" faceIndex: " + faceIndex + " v " + v);
+            }
 
-                for (int y = 0; y < subdividsionHeight; y++)
+            //int i = 0;
+            int faceOffset = 0;
+            for (int faceIndex = 0; faceIndex < 6; faceIndex++)
+            {
+                faceOffset = faceIndex * (subdividsionHeight * subdivisionWidth) ;
+
+                for (int y = 0; y < subdividsionHeight -1; y++)
                 {
-                    for (int x = 0; x < subdivisionWidth; x++)
+                    for (int x = 0; x < subdivisionWidth -1; x++)
                     {
-                        cubeFaceMeshIndexLists.Add(i);
-                        cubeFaceMeshIndexLists.Add(i + subdivisionWidth);
-                        cubeFaceMeshIndexLists.Add(i + subdivisionWidth + 1);
+                        var faceVerticeOffset = subdivisionWidth * y + x  + faceOffset;
+                        var stride = subdivisionWidth;
+                        var tl = faceVerticeOffset;
+                        var bl = faceVerticeOffset + stride;
+                        var br = faceVerticeOffset + stride + 1;
+                        var tr = faceVerticeOffset + 1;
 
-                        cubeFaceMeshIndexLists.Add(i + subdivisionWidth + 1);
-                        cubeFaceMeshIndexLists.Add(i + 1);
-                        cubeFaceMeshIndexLists.Add(i);
-                        i += 6;
+                        cubeFaceMeshIndexLists.Add(tl);
+                        cubeFaceMeshIndexLists.Add(bl);
+                        cubeFaceMeshIndexLists.Add(br);
+
+                        cubeFaceMeshIndexLists.Add(br);
+                        cubeFaceMeshIndexLists.Add(tr);
+                        cubeFaceMeshIndexLists.Add(tl);
+
+                        System.Console.WriteLine();
+                        System.Console.WriteLine( "t0  face" + faceIndex + " cubeFaceMeshIndexLists [" + tl + "] " + "  vert " + cubesFaceMeshLists[tl] );
+                        System.Console.WriteLine( "t0  face" + faceIndex + " cubeFaceMeshIndexLists [" + bl + "] " + "  vert " + cubesFaceMeshLists[bl] );
+                        System.Console.WriteLine( "t0  face" + faceIndex + " cubeFaceMeshIndexLists [" + br + "] " + "  vert " + cubesFaceMeshLists[br] );
+
+                        System.Console.WriteLine();
+                        System.Console.WriteLine( "t1  face" + faceIndex + " cubeFaceMeshIndexLists [" + br + "] " + "  vert " + cubesFaceMeshLists[br] );
+                        System.Console.WriteLine( "t1  face" + faceIndex + " cubeFaceMeshIndexLists [" + tr + "] " + "  vert " + cubesFaceMeshLists[tr] );
+                        System.Console.WriteLine( "t1  face" + faceIndex + " cubeFaceMeshIndexLists [" + tl + "] " + "  vert " + cubesFaceMeshLists[tl] );
+
+                        //i += 6;
                     }
                 }
             }
@@ -113,11 +143,31 @@ namespace Microsoft.Xna.Framework
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                int faceOffset = 0 * 6;
-                int primCount = cubesFacesIndices.Length / 3;
-                //gd.DrawUserPrimitives(PrimitiveType.TriangleList, cubesFaces, 0, 12, VertexPositionNormalTexture.VertexDeclaration);
-                //gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, 0, cubesFaceVertices.Length, cubesFacesIndices, 0, cubesFacesIndices.Length /3,  VertexPositionNormalTexture.VertexDeclaration);
-                gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, 0, cubesFaceVertices.Length, cubesFacesIndices, faceOffset, primCount, VertexPositionNormalTexture.VertexDeclaration);
+                int faceOffset = 3 * 6;
+                int primCount = 2; // cubesFacesIndices.Length / 3;
+                gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, 0, cubesFaceVertices.Length, cubesFacesIndices, 0, cubesFacesIndices.Length /3,  VertexPositionNormalTexture.VertexDeclaration);
+                //gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, 0, cubesFaceVertices.Length, cubesFacesIndices, faceOffset, primCount, VertexPositionNormalTexture.VertexDeclaration);
+            }
+        }
+
+        public static Matrix GetWorldFaceMatrix(int i)
+        {
+            switch (i)
+            {
+                case (int)CubeMapFace.PositiveX: // 0 FACE_RIGHT
+                    return matrixPositiveX;
+                case (int)CubeMapFace.NegativeX: // 1 FACE_LEFT
+                    return matrixNegativeX;
+                case (int)CubeMapFace.PositiveY: // 2 FACE_TOP
+                    return matrixPositiveY;
+                case (int)CubeMapFace.NegativeY: // 3 FACE_BOTTOM
+                    return matrixNegativeY;
+                case (int)CubeMapFace.PositiveZ: // 4 FACE_BACK
+                    return matrixPositiveZ;
+                case (int)CubeMapFace.NegativeZ: // 5 FACE_FORWARD
+                    return matrixNegativeZ;
+                default:
+                    return matrixNegativeZ;
             }
         }
 
@@ -140,26 +190,7 @@ namespace Microsoft.Xna.Framework
             return Vector3.Transform(v, GetWorldFaceMatrix(faceIndex));
         }
 
-        public static Matrix GetWorldFaceMatrix(int i)
-        {
-            switch (i)
-            {
-                case (int)CubeMapFace.NegativeX: // 1 FACE_LEFT
-                    return matrixNegativeX;
-                case (int)CubeMapFace.NegativeZ: // 5 FACE_FORWARD
-                    return matrixNegativeZ;
-                case (int)CubeMapFace.PositiveX: // 0 FACE_RIGHT
-                    return matrixPositiveX;
-                case (int)CubeMapFace.PositiveZ: // 4 FACE_BACK
-                    return matrixPositiveZ;
-                case (int)CubeMapFace.PositiveY: // 2 FACE_TOP
-                    return matrixPositiveY;
-                case (int)CubeMapFace.NegativeY: // 3 FACE_BOTTOM
-                    return matrixNegativeY;
-                default:
-                    return matrixNegativeZ;
-            }
-        }
+
 
         public void DrawPrimitiveSphereFace(GraphicsDevice gd, Effect effect, TextureCube cubeTexture, int cubeFaceToRender)
         {

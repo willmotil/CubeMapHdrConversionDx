@@ -63,6 +63,7 @@ namespace CubeMapHdrConversionDx
         private bool _wireframe = false;
         private RasterizerState rs_wireframe = new RasterizerState() { FillMode = FillMode.WireFrame };
         private RasterizerState rs_solid = new RasterizerState() { FillMode = FillMode.Solid };
+        private RasterizerState rs_wireframe_cullnone = new RasterizerState() { FillMode = FillMode.WireFrame, CullMode = CullMode.None };
         private RasterizerState rs_solid_cullnone = new RasterizerState() { FillMode = FillMode.Solid, CullMode = CullMode.None };
 
         //private DemoCamera _cameraSpritebatch;
@@ -118,7 +119,8 @@ namespace CubeMapHdrConversionDx
 
             SetupTheCameras();
             CreateRectanglePositionsAndAddThemToQuads();
-            CreatePrimitiveSceneCubesAndSpheres();
+            CreatePrimitiveSceneCubes();
+            CreatePrimitiveSpheres();
             CreateSphericalArraysAndCubeMapTextures();
         }
 
@@ -156,12 +158,15 @@ namespace CubeMapHdrConversionDx
             _basicEffect.Projection = Matrix.CreateOrthographicOffCenter(0, device.Viewport.Width, -device.Viewport.Height, 0, forwardDepthDirection * 0, forwardDepthDirection * 1f);
         }
 
-        public void CreatePrimitiveSceneCubesAndSpheres()
+        public void CreatePrimitiveSpheres()
         {
             //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            skySphere = new PrimitiveSphere( 2, 2, 1f, true, false, true);
+            skySphere = new PrimitiveSphere(5, 2, 1f, true, false, true);
             //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        }
 
+        public void CreatePrimitiveSceneCubes()
+        {
             skyCube = new PrimitiveCube(1000, true, false, true);
             for (int i = 0; i < 5; i++)
                 cubes[i] = new PrimitiveCube(1, false, false, true);
@@ -345,20 +350,20 @@ namespace CubeMapHdrConversionDx
             //PrimitiveDrawLoadedAndGeneratedTextures();
 
             DrawPrimitiveSkySphere(gameTime);
-
         }
 
         #region draw primitive scene camera geometry.
 
         private void DrawPrimitiveSkySphere(GameTime gameTime)
         {
+            _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["RenderCubeMap"];
             _drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
             _drawingEffect.Parameters["View"].SetValue(_cameraCinematic.View);
             _drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position); // _cameraCinematic.Position Vector3.Zero
             _drawingEffect.Parameters["World"].SetValue(Matrix.Identity);
 
             if (_wireframe)
-                GraphicsDevice.RasterizerState = rs_wireframe;
+                GraphicsDevice.RasterizerState = rs_wireframe_cullnone;
             else
                 GraphicsDevice.RasterizerState = rs_solid_cullnone;   //rs_solid;
 
