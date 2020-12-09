@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SourceFileCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<SourceFileCollection xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Profile>Reach</Profile>
   <Platform>Windows</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/hdr_colorful_studio_2k.hdr</File>
-    <File>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/hdr_royal_esplanade_2k.hdr</File>
-    <File>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/schadowplatz_2k.hdr</File>
-    <File>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/TextureCubeBuildEffect.fx</File>
-    <File>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/TextureCubeDrawEffect.fx</File>
+    <File>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/hdr_colorful_studio_2k.hdr</File>
+    <File>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/hdr_royal_esplanade_2k.hdr</File>
+    <File>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/Mars_MGS_MOLA_DEM_mosaic_global_1024.jpg</File>
+    <File>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/Mercury_Messenger_DEM_Global_665m_1024.jpg</File>
+    <File>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/schadowplatz_2k.hdr</File>
+    <File>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/TextureCubeBuildEffect.fx</File>
+    <File>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/TextureCubeDrawEffect.fx</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

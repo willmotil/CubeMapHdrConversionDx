@@ -37,6 +37,30 @@
 /processorParam:TextureFormat=Color
 /build:hdr_royal_esplanade_2k.hdr
 
+#begin Mars_MGS_MOLA_DEM_mosaic_global_1024.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Mars_MGS_MOLA_DEM_mosaic_global_1024.jpg
+
+#begin Mercury_Messenger_DEM_Global_665m_1024.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Mercury_Messenger_DEM_Global_665m_1024.jpg
+
 #begin schadowplatz_2k.hdr
 /importer:TextureImporter
 /processor:TextureProcessor

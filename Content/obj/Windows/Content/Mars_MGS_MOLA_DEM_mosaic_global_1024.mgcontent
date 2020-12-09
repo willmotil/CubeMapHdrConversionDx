@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <SourceFile>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/hdr_colorful_studio_2k.hdr</SourceFile>
-  <SourceTime>2020-10-22T00:26:16.1420222-04:00</SourceTime>
-  <DestFile>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/bin/Windows/Content/hdr_colorful_studio_2k.xnb</DestFile>
-  <DestTime>2020-12-09T01:31:55.022053-05:00</DestTime>
+  <SourceFile>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/Mars_MGS_MOLA_DEM_mosaic_global_1024.jpg</SourceFile>
+  <SourceTime>2020-12-09T00:40:19.6493054-05:00</SourceTime>
+  <DestFile>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/bin/Windows/Content/Mars_MGS_MOLA_DEM_mosaic_global_1024.xnb</DestFile>
+  <DestTime>2020-12-09T01:40:08.1300359-05:00</DestTime>
   <Importer>TextureImporter</Importer>
   <ImporterTime>2020-08-10T16:17:54-04:00</ImporterTime>
   <Processor>TextureProcessor</Processor>
@@ -34,7 +34,7 @@
   </Parameters>
   <Parameters>
     <Key>TextureFormat</Key>
-    <Value>NoChange</Value>
+    <Value>Color</Value>
   </Parameters>
   <Dependencies />
   <BuildAsset />
