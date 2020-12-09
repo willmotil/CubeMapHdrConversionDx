@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <SourceFile>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/schadowplatz_2k.hdr</SourceFile>
-  <SourceTime>2020-11-07T03:29:02.4162523-05:00</SourceTime>
-  <DestFile>C:/Users/Owner/GithubPrjs/CubeMapHdrConversionDx/Content/bin/Windows/Content/schadowplatz_2k.xnb</DestFile>
-  <DestTime>2020-12-09T01:32:18.1002163-05:00</DestTime>
+  <SourceFile>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/schadowplatz_2k.hdr</SourceFile>
+  <SourceTime>2020-10-26T03:39:48.5166693-04:00</SourceTime>
+  <DestFile>C:/Users/will/MainFiles/GitPrjs/CubeMapHdrConversionDx/Content/bin/Windows/Content/schadowplatz_2k.xnb</DestFile>
+  <DestTime>2020-12-09T01:58:29.606405-05:00</DestTime>
   <Importer>TextureImporter</Importer>
   <ImporterTime>2020-08-10T16:17:54-04:00</ImporterTime>
   <Processor>TextureProcessor</Processor>
