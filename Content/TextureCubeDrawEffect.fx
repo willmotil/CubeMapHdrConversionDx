@@ -56,6 +56,22 @@ struct PNTVertexShaderOutput
     float2 TextureCoordinate : TEXCOORD0;
 };
 
+struct PTVertexShaderInput
+{
+    float4 Position : POSITION0;
+    float3 Normal : NORMAL0;
+    float2 TextureCoordinate : TEXCOORD0;
+};
+
+struct PTVertexShaderOutput
+{
+    float4 Position : SV_POSITION;
+    float3 Position3D : TEXCOORD1;
+    float3 Normal3D : TEXCOORD2;
+    float2 TextureCoordinate : TEXCOORD0;
+};
+
+
 
 
 //____________________________________
@@ -101,6 +117,55 @@ technique RenderCubeMap
             RenderCubeMapVS();
         PixelShader = compile PS_SHADERMODEL
             RenderCubeMapPS();
+    }
+};
+
+
+//____________________________________
+// shaders and technique  RenderCubeMap
+//____________________________________
+
+PNTVertexShaderOutput RenderSphereWithCubeMapVS(in PNTVertexShaderInput input)
+{
+    PNTVertexShaderOutput output;
+    float4x4 vp = mul(View, Projection);
+    float4 pos = mul(input.Position, World);
+    float4 norm = mul(input.Normal, World);
+    output.Position = mul(pos, vp);
+    output.Position3D = pos.xyz;
+    output.Normal3D = norm.xyz;
+    output.TextureCoordinate = input.TextureCoordinate;
+    return output;
+}
+
+float4 RenderSphereWithCubeMapPS(PNTVertexShaderOutput input) : COLOR
+{
+    //float4 baseColor = tex2D(TextureSamplerDiffuse, input.TextureCoordinate); 
+    ////clip(baseColor.a - .01f); // just straight clip super low alpha.
+    //float3 P = input.Position3D;
+    //float3 N = normalize(input.Normal3D.xyz);
+    //float3 V = normalize(CameraPosition - input.Position3D);
+    //float NdotV = max(0.0, dot(N, V));
+    //float3 R = 2.0 * NdotV * N - V;
+
+    //float4 envMapColor = texCUBElod(CubeMapSampler, float4(R, testValue1));
+    //return float4(envMapColor.rgb, 1.0f);
+
+    //float3 N = normalize(input.Normal3D.xyz);
+
+    float3 P = normalize(input.Position3D);
+    float4 envMapColor = texCUBElod(CubeMapSampler, float4(P, testValue1));
+    return float4(envMapColor.rgb, 1.0f);
+}
+
+technique RenderSphereWithCubeMap
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL
+            RenderSphereWithCubeMapVS();
+        PixelShader = compile PS_SHADERMODEL
+            RenderSphereWithCubeMapPS();
     }
 };
 

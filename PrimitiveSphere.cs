@@ -25,6 +25,8 @@ namespace Microsoft.Xna.Framework
 
     public class PrimitiveSphere
     {
+        public bool showOutput = false;
+        // ...
         public static Matrix matrixNegativeX = Matrix.CreateWorld(Vector3.Zero, new Vector3(-1.0f, 0, 0), Vector3.Up);
         public static Matrix matrixNegativeZ = Matrix.CreateWorld(Vector3.Zero, new Vector3(0, 0, -1.0f), Vector3.Up);
         public static Matrix matrixPositiveX = Matrix.CreateWorld(Vector3.Zero, new Vector3(1.0f, 0, 0), Vector3.Up);
@@ -67,37 +69,38 @@ namespace Microsoft.Xna.Framework
             int v = 0;
             for (int faceIndex = 0; faceIndex < 6; faceIndex++)
             {
+                if(showOutput)
+                    System.Console.WriteLine("\n  faceIndex: " + faceIndex);
                 for (int y = 0; y < subdividsionHeight; y++)
                 {
-                    float perY = y / (subdividsionHeight - 1);
-                    // 
+                    float perY = (float)(y) / (float)(subdividsionHeight - 1);
                     for (int x = 0; x < subdivisionWidth; x++)
                     {
-                        float perX = x / (subdivisionWidth - 1);
+                        float perX = (float)(x) / (float)(subdivisionWidth - 1);
 
                         float X = Interpolate(left, right, perX);
                         float Y = Interpolate(top, bottom, perY);
-
-                        if ((X == 0 && Y == 0) || X == float.NaN || Y == float.NaN || X == float.NegativeInfinity || Y == float.NegativeInfinity || X == float.PositiveInfinity || Y == float.PositiveInfinity)
-                        {
-                            System.Console.WriteLine("nan");
-                        }
 
                         var p0 = new Vector3(X * scale, Y * scale, depth);
                         var uv0 = new Vector2(perX, perY);
                         var v0 = GetVertice(p0, faceIndex, directionalFaces, depth, uv0);
 
+                        if (showOutput)
+                            System.Console.WriteLine("v0: " + v0);
+
                         cubesFaceMeshLists.Add(v0);
                         v += 1;
                     }
                 }
-                System.Console.WriteLine(" faceIndex: " + faceIndex + " v " + v);
+                if (showOutput)
+                    System.Console.WriteLine(" faceIndex: " + faceIndex + " v " + v);
             }
 
-            //int i = 0;
             int faceOffset = 0;
             for (int faceIndex = 0; faceIndex < 6; faceIndex++)
             {
+                if (showOutput)
+                    System.Console.WriteLine("\n  faceIndex: " + faceIndex);
                 faceOffset = faceIndex * (subdividsionHeight * subdivisionWidth) ;
 
                 for (int y = 0; y < subdividsionHeight -1; y++)
@@ -119,7 +122,8 @@ namespace Microsoft.Xna.Framework
                         cubeFaceMeshIndexLists.Add(tr);
                         cubeFaceMeshIndexLists.Add(tl);
 
-                        System.Console.WriteLine();
+                        if (showOutput) { 
+                            System.Console.WriteLine();
                         System.Console.WriteLine( "t0  face" + faceIndex + " cubeFaceMeshIndexLists [" + tl + "] " + "  vert " + cubesFaceMeshLists[tl] );
                         System.Console.WriteLine( "t0  face" + faceIndex + " cubeFaceMeshIndexLists [" + bl + "] " + "  vert " + cubesFaceMeshLists[bl] );
                         System.Console.WriteLine( "t0  face" + faceIndex + " cubeFaceMeshIndexLists [" + br + "] " + "  vert " + cubesFaceMeshLists[br] );
@@ -128,8 +132,7 @@ namespace Microsoft.Xna.Framework
                         System.Console.WriteLine( "t1  face" + faceIndex + " cubeFaceMeshIndexLists [" + br + "] " + "  vert " + cubesFaceMeshLists[br] );
                         System.Console.WriteLine( "t1  face" + faceIndex + " cubeFaceMeshIndexLists [" + tr + "] " + "  vert " + cubesFaceMeshLists[tr] );
                         System.Console.WriteLine( "t1  face" + faceIndex + " cubeFaceMeshIndexLists [" + tl + "] " + "  vert " + cubesFaceMeshLists[tl] );
-
-                        //i += 6;
+                            }
                     }
                 }
             }
@@ -143,9 +146,9 @@ namespace Microsoft.Xna.Framework
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                int faceOffset = 3 * 6;
-                int primCount = 2; // cubesFacesIndices.Length / 3;
                 gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, 0, cubesFaceVertices.Length, cubesFacesIndices, 0, cubesFacesIndices.Length /3,  VertexPositionNormalTexture.VertexDeclaration);
+                //int faceOffset = 3 * 6;
+                //int primCount = 2; // cubesFacesIndices.Length / 3;
                 //gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, cubesFaceVertices, 0, cubesFaceVertices.Length, cubesFacesIndices, faceOffset, primCount, VertexPositionNormalTexture.VertexDeclaration);
             }
         }
@@ -179,6 +182,8 @@ namespace Microsoft.Xna.Framework
         private VertexPositionNormalTexture GetVertice(Vector3 v, int faceIndex, bool directionalFaces, float depth, Vector2 uv)
         {
             var v2 = Vector3.Transform(v, GetWorldFaceMatrix(faceIndex));
+            var n = Vector3.Normalize(v2);
+            v2 = n * depth;
             return new VertexPositionNormalTexture(v2, FlatFaceOrDirectional(v, faceIndex, directionalFaces, depth), uv);
         }
 

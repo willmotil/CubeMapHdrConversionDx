@@ -161,7 +161,7 @@ namespace CubeMapHdrConversionDx
         public void CreatePrimitiveSpheres()
         {
             //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            skySphere = new PrimitiveSphere(5, 2, 1f, true, false, true);
+            skySphere = new PrimitiveSphere(15, 15, 1f, true, false, true);
             //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         }
 
@@ -356,7 +356,7 @@ namespace CubeMapHdrConversionDx
 
         private void DrawPrimitiveSkySphere(GameTime gameTime)
         {
-            _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["RenderCubeMap"];
+            _drawingEffect.CurrentTechnique = _drawingEffect.Techniques["RenderSphereWithCubeMap"];
             _drawingEffect.Parameters["Projection"].SetValue(_cameraCinematic.Projection);
             _drawingEffect.Parameters["View"].SetValue(_cameraCinematic.View);
             _drawingEffect.Parameters["CameraPosition"].SetValue(_cameraCinematic.Position); // _cameraCinematic.Position Vector3.Zero
