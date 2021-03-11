@@ -15,6 +15,7 @@
 #define PS_SHADERMODEL ps_4_0
 #endif
 #define PI 3.14159265359f
+#define PI_TWO 6.28f
 #define ToDegrees 57.295779513f;
 #define ToRadians 0.0174532925f;
 
@@ -430,6 +431,74 @@ float4 GetCubeIrradiance(float2 pixelpos, int faceToMap)
     return final;
 }
 
+float4 PixelIrradianceFunction(float2 pixelpos, int cubeFace) : COLOR
+{
+    float3 normal = normalize(float3(pixelpos.xy, 1));
+    if (cubeFace == 2)
+        normal = normalize(float3(pixelpos.x,  1, -pixelpos.y));
+    else if (cubeFace == 3)
+        normal = normalize(float3(pixelpos.x, -1, pixelpos.y));
+    else if (cubeFace == 0)
+        normal = normalize(float3(1, pixelpos.y,-pixelpos.x));
+    else if (cubeFace == 1)
+        normal = normalize(float3(-1, pixelpos.y, pixelpos.x));
+    else if (cubeFace == 5)
+        normal = normalize(float3(-pixelpos.x, pixelpos.y, -1));
+
+    float3 up = float3(0,1,0);
+    float3 right = normalize(cross(up,normal));
+    up = cross(normal,right);
+
+    float3 sampledColour = float3(0,0,0);
+    float index = 0;
+    float hemisphereRange = 0.78f;
+    for (float phi = 0; phi < 6.28f; phi += 0.10f)  // for (float phi = 0; phi < 6.283f; phi += 0.025f)
+    {
+        for (float theta = 0; theta < hemisphereRange; theta += 0.05f) // for (float theta = 0; theta < 1.57f; theta += 0.1f)
+        {
+            float3 temp = cos(phi) * right + sin(phi) * up;
+            float3 sampleVector = cos(theta) * normal + sin(theta) * temp;
+            sampledColour += texCUBE(CubeMapSampler, sampleVector).rgb * cos(theta) * sin(theta); // sampledColour += texCUBE(CubeMapSampler, sampleVector).rgb * cos(theta) * sin(theta);
+            index++;
+        }
+    }
+    return float4((PI * sampledColour / index), 1.0f ); // bug in code here not mine his.
+}
+
+// works but.
+//float4 PixelIrradianceFunction(float2 pixelpos, int cubeFace) : COLOR
+//{
+//    float3 normal = normalize(float3(pixelpos.xy, 1));
+//    if (cubeFace == 2)
+//        normal = normalize(float3(pixelpos.x,  1, -pixelpos.y));
+//    else if (cubeFace == 3)
+//        normal = normalize(float3(pixelpos.x, -1, pixelpos.y));
+//    else if (cubeFace == 0)
+//        normal = normalize(float3(1, pixelpos.y,-pixelpos.x));
+//    else if (cubeFace == 1)
+//        normal = normalize(float3(-1, pixelpos.y, pixelpos.x));
+//    else if (cubeFace == 5)
+//        normal = normalize(float3(-pixelpos.x, pixelpos.y, -1));
+//
+//    float3 up = float3(0,1,0);
+//    float3 right = normalize(cross(up,normal));
+//    up = cross(normal,right);
+//
+//    float3 sampledColour = float3(0,0,0);
+//    float index = 0;
+//    for (float phi = 0; phi < 6.283f; phi += 0.25f)  // 0.025f
+//    {
+//        for (float theta = 0; theta < 1.57f; theta += 0.1f) // 0.1f
+//        {
+//            float3 temp = cos(phi) * right + sin(phi) * up;
+//            float3 sampleVector = cos(theta) * normal + sin(theta) * temp;
+//            sampledColour += texCUBE(CubeMapSampler, sampleVector).rgb * cos(theta) * sin(theta);
+//            index++;
+//        }
+//    }
+//    return float4(PI * (sampledColour / index), 1.0f); // bug in code here not mine his.
+//}
+
 
 // a good seem however the rotation is system polar singularity buged
 ////// http://www.codinglabs.net/article_physically_based_rendering.aspx
@@ -604,7 +673,8 @@ HdrToCubeMapVertexShaderOutput HdrToDiffuseIlluminationCubeMapVS(in HdrToCubeMap
 
 float4 CubemapToDiffuseIlluminationCubeMapPS(HdrToCubeMapVertexShaderOutput input) : COLOR
 {
-    return GetCubeIrradiance(input.Position3D, FaceToMap);
+    //return GetCubeIrradiance(input.Position3D, FaceToMap);
+    return PixelIrradianceFunction(input.Position3D.xy, FaceToMap);
 }
 
 technique CubemapToDiffuseIlluminationCubeMap

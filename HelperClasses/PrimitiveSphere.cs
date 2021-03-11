@@ -42,7 +42,7 @@ namespace Microsoft.Xna.Framework
             CreatePrimitiveSphere(0, 0, 1f, false, true, true);
         }
 
-        public PrimitiveSphere(int subdivisionWidth, int subdividsionHeight, float scale, bool clockwise, bool invert, bool directionalFaces)
+        public PrimitiveSphere(int subdivisionWidth, int subdividsionHeight ,float scale, bool clockwise, bool invert, bool directionalFaces)
         {
             CreatePrimitiveSphere(subdivisionWidth, subdividsionHeight, scale, clockwise, invert, directionalFaces);
         }
