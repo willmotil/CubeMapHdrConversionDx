@@ -121,3 +121,4 @@ C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content
 C:\Users\Owner\GithubPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content\Mercury_Messenger_DEM_Global_665m_1024.xnb
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content\Mars_MGS_MOLA_DEM_mosaic_global_1024.xnb
 C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\bin\Debug\netcoreapp3.1\Content\Mercury_Messenger_DEM_Global_665m_1024.xnb
+C:\Users\will\MainFiles\GitPrjs\CubeMapHdrConversionDx\obj\Debug\netcoreapp3.1\CubeMapHdrConversionDx.csprojAssemblyReference.cache
