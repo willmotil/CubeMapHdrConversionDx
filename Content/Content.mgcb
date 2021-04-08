@@ -25,6 +25,18 @@
 /processorParam:TextureFormat=NoChange
 /build:hdr_colorful_studio_2k.hdr
 
+#begin Quarry.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Quarry.jpg
+
 #begin TextureCubeBuildEffect.fx
 /importer:EffectImporter
 /processor:EffectProcessor

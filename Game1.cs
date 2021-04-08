@@ -82,7 +82,7 @@ namespace CubeMapHdrConversionDx
             _cubeDrawEffect = Content.Load<Effect>("TextureCubeDrawEffect");
 
             // Hdr's TextureFormat option in the content pipeline editor needs to be set to none instead of color.
-            _sphericalTexture2DEnviromentalMap = Content.Load<Texture2D>("hdr_colorful_studio_2k");  
+            _sphericalTexture2DEnviromentalMap = Content.Load<Texture2D>("Quarry");  // hdr_colorful_studio_2k
             _initialLoadedFormat = _sphericalTexture2DEnviromentalMap.Format;
 
             LoadPrimitives();
