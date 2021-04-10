@@ -185,7 +185,7 @@ namespace CubeMapHdrConversionDx
         {
             GraphicsDevice.Clear(Color.DarkSlateGray);
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            
+
             if (_wireframe)
                 GraphicsDevice.RasterizerState = rs_wireframe;
 

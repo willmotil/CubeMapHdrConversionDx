@@ -62,7 +62,7 @@ RenderCubeVertexShaderOutput RenderCubeMapVS(in RenderCubeVertexShaderInput inpu
     float4 pos = mul(input.Position, World);
     float4 norm = mul(input.Normal, World);
     output.Position = mul(pos, vp);
-    output.Position3D = mul(pos.xyz, View);
+    output.Position3D = pos.xyz;
     output.Normal3D = norm.xyz;
     output.TexureCoordinate = input.TexureCoordinate;
     return output;
